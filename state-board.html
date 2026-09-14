@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Guided Path — state board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#242C33; --ink-2:#4A5359; --muted:#666B70;
+  --line:#C8CBCE; --line-soft:#E8E9EB; --soft:#F3F1F1; --canvas:#E8EAEB;
+  --green:#62A60A; --green-ink:#3F6D06; --blue:#006FA6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:Roboto,Arial,system-ui,sans-serif;font-size:16px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px 100px}
+header{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1{margin:0 0 10px;font-size:34px;font-weight:500;letter-spacing:-.015em}
+.lede{margin:0;max-width:66ch;font-size:15px;line-height:1.6;color:var(--ink-2)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:20px;font-size:12px;color:var(--muted)}
+.meta b{color:var(--ink-2);font-weight:500}
+
+.toolbar{position:sticky;top:0;z-index:10;background:var(--canvas);padding:16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid var(--line-soft)}
+.toolbar button{font-size:12px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;color:inherit}
+.toolbar button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toolbar .spacer{flex:1}
+.toolbar label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer}
+
+section{padding-top:38px}
+h2{margin:0 0 4px;font-size:20px;font-weight:500}
+h2 + p{margin:0 0 20px;font-size:13.5px;color:var(--muted);max-width:70ch;line-height:1.6}
+
+.grid{display:grid;gap:22px;grid-template-columns:repeat(auto-fill,minmax(218px,1fr))}
+.tile{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.shot{position:relative;height:472px;background:var(--soft);border-bottom:1px solid var(--line-soft);overflow:hidden}
+.shot iframe{position:absolute;top:0;left:0;width:375px;height:812px;border:0;transform:scale(.58);transform-origin:top left}
+.shot .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.shot a.open{position:absolute;inset:0;z-index:2}
+.tcap{padding:12px 14px 14px}
+.tid{font-size:11px;letter-spacing:.09em;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.tname{font-size:14.5px;margin:3px 0 4px;font-weight:500}
+.tnote{font-size:12.5px;color:var(--muted);line-height:1.5}
+.tag{display:inline-block;margin-top:9px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--ink-2)}
+.tag.q{background:#F6EEDC;color:#8A5A00}
+
+footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.6}
+a{color:var(--blue)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">EchoPark VDP 2.0 · SA-0777 · mobile expansion</p>
+  <h1>Mobile guided path — state board</h1>
+  <p class="lede">Every state in the prototype, in one place, for review and annotation. Each tile opens
+    the live prototype at that state. Turn previews on to load the frames inline — they are the real
+    prototype in an iframe, not screenshots, so they stay current as the build changes.</p>
+  <div class="meta">
+    <span><b>States</b> 40</span>
+    <span><b>Viewport</b> 375 × 812</span>
+    <span><b>Scope</b> above the fold</span>
+    <span><b>Prototype</b> <a href="index.html">index.html</a></span>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button data-f="all" class="on">All</button>
+  <button data-f="S">Shell and entry</button>
+  <button data-f="P1">P1 · Pay</button>
+  <button data-f="P2">P2 · Fit</button>
+  <button data-f="P3">P3 · Compare</button>
+  <button data-f="G">Supporting</button>
+  <button data-f="q">Needs a decision</button>
+  <span class="spacer"></span>
+  <label><input type="checkbox" id="prev" checked> Load previews</label>
+</div>
+
+<div id="board"></div>
+
+<footer>
+  Built on <code>mobile-screens/above-01-default-keyfeatures.html</code>. Copy follows
+  <code>Editorial Templates/Designer Voice/Humanizer - Editorial Guidance.md</code>.
+  Open questions are tracked in <code>mobile-guided-path-codex-handoff.md</code> §12 —
+  tiles marked <span class="tag q">needs a decision</span> are the ones waiting on an answer.
+</footer>
+
+</div>
+
+<script>
+const GROUPS = [
+ {key:'S', title:'Shell and entry', note:'The control, the three entry treatments, and what the module leaves behind once it is used or dismissed. Variants A, B and C are switchable at runtime — the point is to compare them on a phone rather than in the abstract.', items:[
+  ['S0','Standard VDP','No guided path anywhere. The baseline the other states are judged against.'],
+  ['S1','Entry A · question bar','A card under the hero, in normal flow. Not pinned — pinning it above the always-on sticky bar costs about 120px of an 812px viewport.',1],
+  ['S2','Entry B · hero toast','Bottom-anchored above the sticky bar, after a delay. Timing and frequency are placeholders.',1],
+  ['S3','Entry B · toast opened the drawer','Tapping the toast dismisses it and raises the guided drawer. The toast is a nudge toward the drawer, never the drawer itself.'],
+  ['S4','Entry C · price callout','One line inside the price block, where the money question already lives. Cheapest in vertical space; easiest to miss.',1],
+  ['S5','Dismissed','The module is gone and "Help me decide" stays in the action row, so the path is recoverable without a reload.'],
+  ['S6','Return · answered','Chips keep a check and a short summary. The answer is not re-earned.'],
+  ['S7','Saved','The heart fills and Car Comparison appears in the action row — not over the photo, which already carries four controls.'],
+  ['S8','Entry D · persistent nav','Built on the existing .jumpnav. Appears once the hero passes and stays. Costs nothing above the fold, so the total price clears by 33px instead of sitting 91px below it.',1],
+  ['S9','D · jump to a section','Routing without swiping — the answer to the Carvana failure mode.'],
+  ['S10','Entry D2 · nav carries price','CarMax\'s model adapted: identity and price ride in the bar too. The primary action is not repeated here because the sticky bottom bar already holds it.',1],
+  ['S11','D2 · Go to sheet','One control, both lists: the decision questions and the sections on this page.']
+ ]},
+ {key:'P1', title:'Path 1 · What will I pay?', note:'Nine states. The desktop three-column workspace becomes one sheet with the total pinned to the header. Toggling a protection plan visibly changes that total — the most convincing moment in the desktop concept, and it survives the small screen intact.', items:[
+  ['P1.0','Peek · the answer','Leads with the total at full size, then three next steps. An itemised ledger at 45% height gets clipped exactly where the total should be.'],
+  ['P1.1','Full ledger','Taxes and fees marked as estimates, then what you would finance.'],
+  ['P1.2','Protection · toggling','Selected plans sit below the cash total as their own monthly block. Mixing monthly amounts into a cash column is what made the desktop ledger hard to read.'],
+  ['P1.3','Plan detail','A pushed layer inside the same sheet, with a back link. Repair-cost figures, what the plan includes, deductible and payment.'],
+  ['P1.4','Prequalify · invitation','Four to six minutes, no impact to credit score.'],
+  ['P1.5','Terms result','The ledger heading becomes "Your cost" and the monthly appears. Computed from the loan total, so every toggle stays consistent.',1],
+  ['P1.6','Trade-in result','Estimated value and how it affects this vehicle.'],
+  ['P1.7','Personalised cost','Down payment, trade value, payoff, estimated loan total.'],
+  ['P1.8','Return to VDP','The price block now carries the monthly and a "Terms available" marker, so work done inside the path is visible from outside it.']
+ ]},
+ {key:'P2', title:'Path 2 · Does it fit my needs?', note:'Six states, ported from Figma 1:3201 — the four mobile-width Chat with Echo frames. The panel is headed \'Chat with Echo\', not the path name, and the composer is pinned to the sheet bottom.', items:[
+  ['P2.0','Default','Four question pills and an example of what Echo would return.'],
+  ['P2.1','Pill picked','Quick answer card with passenger capacity, then seating layout, rear comfort, and access as bordered rows.'],
+  ['P2.2','Echo asks back','"That answers the seats. It doesn\'t answer whether this is the right one for you."'],
+  ['P2.3','Typed question','A Using: box carries the earlier answers forward, then labelled vehicle cards — the one you are looking at, more room, more capability.'],
+  ['P2.4','Follow-up','"Could this be the right car?" — one action, not a menu.'],
+  ['P2.5','Return','The chip keeps the fit summary.']
+ ]},
+ {key:'P3', title:'Path 3 · How does it compare?', note:'Six states. The starting vehicle is pinned in the selection rail and the counter sits in the sheet header. Cards carry two targets: the plus adds, the body previews.', items:[
+  ['P3.0','Build your comparison','Empty state, starting car badged.'],
+  ['P3.1','Source switching','Similar, saved, search, Ask Echo — a chip row rather than a tab strip.'],
+  ['P3.2','Adding','Counter climbs; the copy changes as the last slot approaches.'],
+  ['P3.3','Full · 4 of 4','"Compare cars now" becomes primary.',1],
+  ['P3.4','Remove confirmation','With "don\'t show this confirmation again".'],
+  ['P3.5','Vehicle preview','Why consider this one, quick overview, and a route to the full vehicle page.']
+ ]},
+ {key:'G', title:'Supporting above-the-fold states', note:'Existing patterns the paths hand off to, extended rather than rebuilt. Test drive is three steps in one sheet with a sticky Continue — the desktop summary panel is the first thing to cut at this width.', items:[
+  ['G1','Gallery','Category tabs, large frame and count pinned; only the thumbnail grid scrolls. All 24 exterior entries — the 360° lead plus 23 stills. Tapping a thumbnail swaps the large frame without moving the grid.'],
+  ['G1b','Gallery · expanded view','Full-screen viewer over the sheet. Prev/next and a count; closing returns to the photo you were on, not the top of the grid.'],
+  ['G2','Key features · At a glance','Figma 1:18762. One panel, two groups — highlighted features and installed options. Opening it turns the hero markers on; they are off by default.'],
+  ['G3','Feature detail','Pager sheet, 1 of 7.'],
+  ['G4','Location and availability','"20 mi away" is itself the link, matching desktop.'],
+  ['G5','Test drive · location','Nearby list, this vehicle is here.'],
+  ['G6','Test drive · day and time','Day row, then time frames.'],
+  ['G7','Test drive · confirm','One summary line, sticky action.']
+ ]}
+];
+
+const board = document.getElementById('board');
+board.innerHTML = GROUPS.map(g=>`
+  <section data-g="${g.key}">
+    <h2>${g.title}</h2>
+    <p>${g.note}</p>
+    <div class="grid">
+      ${g.items.map(([id,name,note,q])=>`
+        <div class="tile" data-g="${g.key}" data-q="${q?1:0}">
+          <div class="shot" data-state="${id}">
+            <div class="ph">Preview off</div>
+            <a class="open" href="index.html?state=${id}" target="_blank" title="Open ${id} in the prototype"></a>
+          </div>
+          <div class="tcap">
+            <div class="tid"><span>${id}</span><span>open ↗</span></div>
+            <div class="tname">${name}</div>
+            <div class="tnote">${note}</div>
+            ${q?'<span class="tag q">Needs a decision</span>':''}
+          </div>
+        </div>`).join('')}
+    </div>
+  </section>`).join('');
+
+/* previews load only when scrolled into view — 31 live frames at once is a lot
+   of work for a page that is mostly read, not operated */
+let io = null;
+function mountPreviews(on){
+  document.querySelectorAll('.shot').forEach(sh=>{
+    const has = sh.querySelector('iframe');
+    if (!on){ if(has) has.remove(); sh.querySelector('.ph').style.display='grid'; return; }
+  });
+  if (!on){ if(io){io.disconnect(); io=null;} return; }
+  io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if (!e.isIntersecting) return;
+      const sh = e.target;
+      if (sh.querySelector('iframe')) return;
+      const f = document.createElement('iframe');
+      f.setAttribute('loading','lazy');
+      f.setAttribute('title', sh.dataset.state);
+      f.src = 'index.html?state=' + sh.dataset.state;
+      sh.insertBefore(f, sh.firstChild);
+      sh.querySelector('.ph').style.display='none';
+      io.unobserve(sh);
+    });
+  }, {rootMargin:'400px'});
+  document.querySelectorAll('.shot').forEach(sh=>io.observe(sh));
+}
+document.getElementById('prev').addEventListener('change', e=>mountPreviews(e.target.checked));
+mountPreviews(true);
+
+document.querySelector('.toolbar').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-f]'); if(!b) return;
+  document.querySelectorAll('.toolbar button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  const f = b.dataset.f;
+  document.querySelectorAll('.tile').forEach(t=>{
+    const show = f==='all' ? true : f==='q' ? t.dataset.q==='1' : t.dataset.g===f;
+    t.style.display = show ? '' : 'none';
+  });
+  document.querySelectorAll('section').forEach(s=>{
+    s.style.display = Array.from(s.querySelectorAll('.tile')).some(t=>t.style.display!=='none') ? '' : 'none';
+  });
+});
+</script>
+</body></html>

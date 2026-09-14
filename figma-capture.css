@@ -1,0 +1,1413 @@
+/* ============================================================================
+   EchoPark VDP 2.0 — Mobile Guided Path
+   SA-0777 · mobile expansion of the desktop guided-path work · 27 Aug 2026
+
+   Built on the shell in mobile-screens/above-01-default-keyfeatures.html. Class
+   names from that file are kept verbatim (.frameWrap .frame #scrollarea .mnav
+   .hero .qspecs .modetab .pblock .prow .stickybar .scrim .sheet .shead .sbody)
+   so anything approved here can be merged back without a rename pass.
+
+   NEW in this build:
+     .gpath    — the guided-path question bar (entry variant A)
+     .gtoast   — the hero toast (entry variant B)
+     .gcallout — the price-block callout (entry variant C)
+     .sheet[data-snap] — three-stop sheet: peek / half / full
+     .stack / .screen  — pushed detail layers inside one sheet
+
+   Tokens are the Figma DS variables, not invented values. Do not add colors.
+   ========================================================================== */
+
+:root{
+  /* ------------------------------------------------------------------------
+     Tokens lifted from Design System/echopark-vdp-mobile-prototype_3.html —
+     the DS-native mobile prototype. Names kept verbatim so anything approved
+     here maps to the system without a translation pass. The short aliases
+     beneath them are the ones this file already used.
+     ------------------------------------------------------------------------ */
+  --color-text-primary:#242C33;
+  --color-text-secondary:#313D47;
+  --color-text-tertiary:#666B70;
+  --color-text-link:#006FA6;
+  --color-action-primary:#3E8500;
+  --color-action-primary-hover:#356F00;
+  --color-surface-subtle:#F5F4F3;
+  --color-surface-muted:#E8E9EB;
+  --color-surface-warm:#EFEEEC;
+  --color-border-default:#E8E9EB;
+  --color-border-strong:#BCBFC2;
+  --color-scrim:rgba(20,20,20,.35);
+
+  --fs-h4:26px; --lh-h4:31.2px; --ls-h4:-0.2px;
+  --fs-h5:22px; --lh-h5:26.4px;
+  --fs-subhead:18px;
+  --fs-body-lg:16px; --lh-body-lg:24px;
+  --fs-body-sm:14px; --lh-body-sm:22px;
+  --fs-label:12px; --ls-label:0.2px;
+  --fs-btn:14px; --ls-btn:0.4px;
+  --fw-light:300; --fw-regular:400; --fw-medium:500; --fw-bold:700;
+
+  --radius-sm:8px; --radius-md:10px; --radius-lg:16px;
+  --radius-frame:28px; --radius-circular:9999px;
+  --border-thin:2px;
+
+  /* aliases used through this file */
+  --ink:var(--color-text-primary);
+  --ink-2:var(--color-text-secondary);
+  --muted:var(--color-text-tertiary);
+  --line:var(--color-border-strong);
+  --line-soft:var(--color-border-default);
+  --surface:#FFFFFF;
+  --soft:var(--color-surface-subtle);
+  --canvas:#EDEDEA;
+  --media:var(--color-surface-warm);
+  --green:var(--color-action-primary);
+  --green-ink:var(--color-action-primary);
+  --green-soft:#EAF3DC;
+  --blue:var(--color-text-link);
+  --r-lg:var(--radius-lg);
+  --r-pill:var(--radius-circular);
+  --shadow-1:0 2px 6px rgba(0,0,0,.14);
+  /* The sheet gets its elevation back. Removing every shadow was the right call
+     for controls that sit on their own ground — chips, pills, the sticky bar —
+     but a bottom sheet is a surface floating over the page, and at peek there is
+     nothing else telling you so: white on white, one hairline. Elevation plus a
+     scrim is how every mobile platform separates a sheet from what is behind it.
+     Soft and wide, not a hard drop. */
+  --shadow-sheet:0 -10px 34px -8px rgba(20,20,20,.20), 0 -2px 8px rgba(20,20,20,.06);
+}
+
+*{box-sizing:border-box}
+/* .gcallout sets display:flex, which beats the UA stylesheet's [hidden] rule —
+   without this guard the price-block callout showed in every entry variant. */
+[hidden]{display:none !important}
+html,body{margin:0}
+
+html.figma-capture-mobile,
+html.figma-capture-mobile body{
+  width:375px !important;height:812px !important;
+  min-width:375px !important;max-width:375px !important;
+  min-height:812px !important;max-height:812px !important;
+  overflow:hidden !important;
+}
+html.figma-capture-mobile body{padding:0 !important;display:block !important;background:#fff !important}
+html.figma-capture-mobile .stage{width:375px !important;height:812px !important;display:block !important}
+html.figma-capture-mobile .side,html.figma-capture-mobile .framecap{display:none !important}
+html.figma-capture-mobile .frameWrap{width:375px !important;max-width:375px !important;margin:0 !important}
+html.figma-capture-mobile .frame{width:375px !important;height:812px !important;border:0 !important;border-radius:0 !important;box-shadow:none !important}
+body{
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:Roboto,Arial,system-ui,sans-serif;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit}
+
+/* ---------------------------------------------------------------- dev rail */
+/* Stage layout from the DS mobile prototype rather than a fixed overlay rail.
+   The old fixed rail sat on top of the phone whenever the window was narrower
+   than ~700px, which made the prototype look broken and hard to operate. */
+body{padding:20px 16px 40px;display:flex;justify-content:center}
+.stage{display:flex;align-items:flex-start;gap:36px;max-width:880px;width:100%}
+.side{
+  flex:1 1 auto;min-width:0;max-width:430px;
+  display:flex;flex-direction:column;gap:14px;
+  position:sticky;top:20px;
+  font-size:12px;color:var(--ink-2);
+}
+@media (max-width:860px){
+  body{padding:16px 12px 40px}
+  .stage{flex-direction:column;align-items:center;gap:20px}
+  .side{order:2;position:static;max-width:375px;width:100%}
+}
+.pagecap{font-size:12px;color:#6b6b6b;line-height:1.5}
+.pagecap b{color:#3a3a3a}
+.railrow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.railrow h4{margin:0 0 8px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.railrow .seg{display:flex;flex-wrap:wrap;gap:4px}
+.railrow button{
+  font-size:11px;padding:5px 9px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:#fff;cursor:pointer;
+}
+.railrow button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.railrow select{width:100%;font-family:inherit;font-size:12px;padding:5px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.railrow label.chk{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:pointer}
+.railnote{font-size:11px;color:var(--muted);line-height:1.45;margin-top:8px}
+
+/* ------------------------------------------------------------ device frame */
+.frameWrap{flex:0 0 auto;max-width:375px;margin:0}
+.frame{
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
+  height:812px;background:#fff;border:1px solid #cfcac2;border-radius:28px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.35);
+}
+.frame.tall{height:926px}
+.frame.short{height:700px}
+.framecap{
+  text-align:center;font-size:11px;color:var(--muted);margin:0 0 8px;
+  letter-spacing:.06em;text-transform:uppercase;
+}
+
+/* ------------------------------------------------------------------- mnav */
+.mnav{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;font-size:14px;border-bottom:1px solid var(--line)}
+.mnav .mnav-left{display:flex;align-items:center;gap:14px}
+.mnav .mnav-right{display:flex;align-items:center;gap:8px}
+.mnav .logo{font-weight:700;font-size:16px;letter-spacing:-.02em}
+.mnav .logo b{color:var(--green-ink);font-weight:700}
+.mnav .zip{color:var(--blue);font-size:12px}
+.mnav .ic{width:32px;height:32px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:15px;flex:none;cursor:pointer}
+
+#scrollarea{position:relative;overflow-y:auto;flex:1;min-height:0;padding-bottom:78px}
+
+/* ------------------------------------------------------------------- hero */
+/* 276 not 300: the hero, the guided module, and the total price all have to
+   clear the fold at 375x812. This is the 24px that makes that true. */
+.hero{position:relative;background:var(--media);height:276px;flex:none}
+.hero .hphotos{position:absolute;inset:0;background:center/contain no-repeat;display:flex;align-items:center;justify-content:center;color:#8b8b8b;font-size:13px}
+.hero .htools{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:3}
+.hero .htool{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.94);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;box-shadow:var(--shadow-1)}
+.hero .htool.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hero .hhot{position:absolute;width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--ink);color:var(--ink);font-size:11px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-1);z-index:3;display:grid;place-items:center;padding:0}
+.hero .hhot.on{background:var(--ink);color:#fff}
+.hero .hhot.h1{left:26%;top:58%}
+.hero .hhot.h2{left:66%;top:66%}
+.hero .gallerypill{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:var(--r-pill);padding:7px 13px;font-size:12px;cursor:pointer;box-shadow:var(--shadow-1)}
+.hero .hpager{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:var(--r-pill);padding:6px 12px;font-size:12px;box-shadow:var(--shadow-1)}
+.hero .hpager button{border:0;background:none;cursor:pointer;font-size:13px;padding:0 2px}
+
+/* --------------------------------------------------------- quick specs row */
+.qspecs{display:flex;gap:8px;overflow-x:auto;padding:12px 14px;scrollbar-width:none}
+.qspecs::-webkit-scrollbar{display:none}
+.qchip{flex:none;background:var(--soft);border-radius:10px;padding:8px 12px;font-size:13px;min-width:112px}
+.qchip label{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+
+.modetab{display:flex;align-items:center;gap:8px;padding:12px 14px 0;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.modetab::-webkit-scrollbar{display:none}
+.hero .hchips{position:absolute;top:12px;left:12px;display:flex;gap:8px;z-index:3}
+.hero .hchips .hpill{box-shadow:var(--shadow-1)}
+
+/* Hero chips, proportioned to the DS .pill: 12px medium, hairline border-strong.
+   They are peers at rest — neither is filled by default. The DS prototype fills a
+   pill only inside a .pillgroup segmented control, where filled means "this is the
+   mode you are in". These two are not modes, so filled means "this panel is open". */
+.hpill{
+  flex:none;height:32px;display:flex;align-items:center;padding:0 14px;
+  border-radius:var(--radius-circular);border:1px solid var(--color-border-strong);
+  background:#fff;cursor:pointer;font-family:inherit;
+  font-size:var(--fs-label);letter-spacing:var(--ls-label);font-weight:var(--fw-medium);
+  color:var(--color-text-primary);white-space:nowrap;
+}
+.hpill[aria-pressed="true"]{background:var(--color-text-primary);border-color:var(--color-text-primary);color:#fff}
+.hpill.quiet{color:var(--color-text-secondary)}
+
+/* ------------------------------------------------ guided path — variant A */
+.gpath{margin:12px 14px 0;padding:12px 12px 13px;border:1px solid var(--line);border-radius:var(--r-lg);background:#fff}
+.gpath .gtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.gpath h3{margin:0;font-size:16px;font-weight:500}
+.gpath .gsub{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.gpath .gx{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:var(--muted);padding:0 2px}
+.gpath .grow{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.gpath .grow::-webkit-scrollbar{display:none}
+.gp-chip{
+  flex:none;display:flex;align-items:center;gap:7px;
+  font-size:13px;padding:9px 14px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap;
+}
+/* Active state mirrors desktop .guided-nav>button.active — soft fill + 3px underline */
+.gp-chip.on{background:var(--soft);border-color:var(--soft);box-shadow:inset 0 -3px 0 var(--ink)}
+.gp-chip .tick{color:var(--green-ink);font-weight:500}
+.gp-chip .sum{color:var(--muted)}
+.gp-echo{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--soft);cursor:pointer;font-size:15px}
+.gp-echo-label{font-size:12px;color:var(--muted);margin-top:9px}
+
+/* --------------------------------------------------- guided path — toast B */
+/* An actual toast: one line, one action, dismissible, above the sticky bar. It
+   was briefly a card with a heading, a paragraph and two buttons — that is a
+   dialog, and a dialog that arrives on a timer is an interruption. This is a
+   nudge toward the drawer; the drawer is where the questions live. */
+.gtoast{
+  position:absolute;left:12px;right:12px;bottom:76px;z-index:30;
+  background:var(--ink);border-radius:var(--radius-md);
+  display:none;align-items:stretch;overflow:hidden;
+}
+.gtoast.show{display:flex;animation:toastIn .22s ease-out}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.gtoastmain{
+  flex:1;min-width:0;display:flex;align-items:center;gap:10px;
+  background:none;border:0;padding:13px 6px 13px 15px;cursor:pointer;
+  font:inherit;text-align:left;color:#fff;
+}
+.gtmsg{font-size:13px;line-height:1.45;color:rgba(255,255,255,.78)}
+.gtmsg b{display:block;font-weight:500;color:#fff}
+.gtchev{width:18px;height:18px;flex:none;color:#fff}
+.gtx{
+  flex:none;display:grid;place-items:center;width:42px;padding:0;
+  background:none;border:0;border-left:1px solid rgba(255,255,255,.16);cursor:pointer;
+}
+.gtx .ico{width:16px;height:16px;color:rgba(255,255,255,.7)}
+
+/* ------------------------------------------------ guided path — callout C */
+.gcallout{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:12px 0 0;padding:12px;border-radius:12px;background:var(--soft);
+  font-size:13px;
+}
+.gcallout b{font-weight:500}
+.gcallout button{border:0;background:none;color:var(--blue);font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+
+/* ------------------------------------------------------------ price block */
+/* Order follows the desktop rail in right-rail-usability-variations: identity,
+   location, protection offer, TOTAL PRICE, then the breakdown behind a
+   progressive-disclosure toggle. Leading with the itemised list — which is what
+   the older mobile file does — buries the one number shoppers look for and
+   costs about 90px above the fold. */
+.pblock{padding:16px 14px 8px}
+.pblock .yr{font-size:12px;color:var(--muted);letter-spacing:.04em;display:flex;justify-content:space-between}
+.pblock h2{margin:2px 0 8px;font-size:var(--fs-h5);line-height:var(--lh-h5);font-weight:var(--fw-light)}
+.prow{display:flex;justify-content:space-between;font-size:14px;padding:6px 0}
+.prow.pdrop{color:var(--green-ink)}
+.prow.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-size:16px;align-items:baseline}
+.prow.tot b{font-size:22px;font-weight:500}
+.pterms{margin-top:8px;font-size:12px;color:var(--muted)}
+.pterms .flag{display:inline-block;background:var(--soft);border-radius:var(--r-pill);padding:3px 10px;font-size:11px;color:var(--ink);letter-spacing:.04em}
+.pfine{font-size:12px;color:var(--muted);margin:16px 0 8px;line-height:1.5}
+.mloc{font-size:13px;margin-top:10px;line-height:1.5}
+.mloc a{color:var(--blue)}
+.linkrow{font-size:13px;margin-top:10px}
+.linkrow a{color:var(--blue);cursor:pointer;text-decoration:underline}
+
+/* ------------------------------------------------- below the fold (routing) */
+/* Not content. These are the anchors the persistent nav routes to, kept
+   deliberately short so the prototype does not read as a long page. The
+   EchoPark Promise is removed from this build entirely, not collapsed —
+   below-the-fold reassurance returns as its own scoped exploration. */
+
+
+/* ------------------------------------------- persistent nav · entry variant D */
+/* Built on the .jumpnav component in mobile-screens: a collapsed header naming
+   where you are, opening a list. Two halves here — where you are, and what would
+   help you decide — so the guided questions cost nothing above the fold and stay
+   reachable from anywhere on the page. */
+/* Sits directly beneath the EchoPark header, which is always present. At rest it
+   is hidden and reveals on scroll; scrolling back up hides it again.
+   BUGFIX: it used to hide with translateY(-101%) from top:53px, which parked it
+   over the header instead of off-screen — so at rest it covered the EchoPark bar
+   and on scroll it appeared to move away. Hiding is now visibility + opacity, and
+   the transform is only the slide. */
+.pnav{
+  position:absolute;left:0;right:0;top:53px;z-index:24;
+  display:none;align-items:center;gap:10px;
+  background:#fff;border-bottom:1px solid var(--line);padding:8px 12px;
+  transform:translateY(-8px);opacity:0;visibility:hidden;
+  transition:transform .2s ease,opacity .2s ease,visibility .2s;
+}
+.pnav.enabled{display:flex}
+.pnav.enabled.show{transform:translateY(0);opacity:1;visibility:visible}
+.pnav-where{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:none;border:0;padding:8px 0;font-family:inherit;font-size:14px;
+  text-align:left;cursor:pointer;color:var(--ink);
+}
+.pnav-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pnav-chev{color:var(--muted);flex:none}
+.pnav-decide{
+  flex:none;border:1px solid var(--ink);background:#fff;border-radius:var(--r-pill);
+  padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer;color:var(--ink);
+}
+
+/* ------------------------------------------------------------ sticky bar */
+/* Flat, per review: the old 0 -8px 20px shadow read as a gradient wash over the
+   content above the bar. A hairline does the same job of separating it. */
+.stickybar{
+  position:absolute;left:0;right:0;bottom:0;z-index:25;
+  background:#fff;border-top:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;padding:12px;
+}
+/* DS buttons: 48px, pill, 2px border. Primary is the action green, not ink. */
+.btn{
+  flex:1 1 0;min-width:0;height:48px;border-radius:var(--radius-circular);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-family:inherit;font-size:var(--fs-btn);letter-spacing:var(--ls-btn);
+  font-weight:var(--fw-medium);text-align:center;padding:0 12px;
+  transition:background .15s,border-color .15s;
+}
+.btn.primary{background:var(--color-action-primary);border:var(--border-thin) solid var(--color-action-primary);color:#fff}
+.btn.ghost{background:#fff;border:var(--border-thin) solid var(--color-text-primary);color:var(--color-text-primary)}
+.btn.block{width:100%;flex:0 0 auto}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ----------------------------------------------------------------- sheet */
+.scrim{position:absolute;inset:0;background:rgba(20,20,20,.35);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.scrim.show{opacity:1;pointer-events:auto}
+
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:61;
+  display:flex;flex-direction:column;
+  background:#fff;border-radius:22px 22px 0 0;
+  border-top:1px solid var(--line);box-shadow:var(--shadow-sheet);
+  transform:translateY(100%);
+  transition:transform .3s ease,height .3s ease;
+  height:45%;
+}
+.sheet.show{transform:translateY(0)}
+.sheet[data-snap="peek"]{height:45%}
+.sheet[data-snap="half"]{height:70%}
+.sheet[data-snap="full"]{height:92%}
+
+.sheet .handle{width:36px;height:4px;background:#d8d8d8;border-radius:3px;margin:10px auto 4px;flex:none;cursor:grab}
+.sheet .handlehit{flex:none;padding:0 0 4px;cursor:grab;touch-action:none}
+.sheet .shead{flex:none;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:4px 18px 12px;border-bottom:1px solid var(--line-soft)}
+.sheet .shead h2{margin:0;font-size:var(--fs-h5);line-height:var(--lh-h5);font-weight:var(--fw-light)}
+.sheet .shead .ssub{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.sheet .sx{border:0;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:0 2px}
+.sheet .sback{display:block;font-size:13px;color:var(--blue);background:none;border:0;padding:0 0 6px;cursor:pointer;text-decoration:underline}
+
+/* pushed layers: one sheet, two screens */
+.stack{position:relative;flex:1;min-height:0;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;transition:transform .28s ease;background:#fff}
+.screen.s0{transform:translateX(0)}
+.stack.pushed .screen.s0{transform:translateX(-100%)}
+.screen.s1{transform:translateX(100%)}
+.stack.pushed .screen.s1{transform:translateX(0)}
+
+.sbody{padding:14px 18px 18px;overflow-y:auto;flex:1;min-height:0}
+/* At peek and half the body does not scroll — the sheet must never compete
+   with the page behind it. Rule 2 of the interaction model.
+   No bottom fade: peek is sized to hold a complete thought, so a gradient
+   implying "more below" would be describing a problem rather than solving it. */
+.sheet[data-snap="peek"] .sbody,
+.sheet[data-snap="half"] .sbody{overflow:hidden}
+.sfoot{flex:none;padding:12px 18px 18px;border-top:1px solid var(--line-soft);background:#fff}
+
+/* --------------------------------------------------------- sheet content */
+/* DS eyebrow is the action green, not grey — it is a signpost, not a caption */
+.eyebrow{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--color-action-primary);font-weight:var(--fw-medium);margin:0 0 6px}
+.sh3{margin:0 0 4px;font-size:var(--fs-subhead);font-weight:var(--fw-light)}
+.slede{margin:0 0 14px;font-size:13px;color:var(--muted);line-height:1.5}
+.flag{display:inline-block;background:var(--soft);border-radius:var(--r-pill);padding:4px 11px;font-size:11px;letter-spacing:.04em}
+
+.ledger{margin:0 0 6px}
+.lrow{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+.lrow:last-child{border-bottom:0}
+.lrow.sub{color:var(--green-ink)}
+.lrow.plan{color:var(--ink-2)}
+.lrow.total{border-top:1px solid var(--line);border-bottom:0;margin-top:6px;padding-top:11px;font-size:16px}
+.lrow.total b{font-size:20px;font-weight:500}
+.lrow .est{color:var(--muted);font-size:11px;margin-left:5px}
+.fine{font-size:12px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+
+.steps{margin:14px 0 0;border-top:1px solid var(--line-soft)}
+.step{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line-soft);padding:14px 0;font-size:15px;cursor:pointer}
+.step .chev{color:var(--muted)}
+.step .meta{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+
+.planrow{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line-soft)}
+.planrow .pinfo{flex:1;min-width:0}
+.planrow .pname{font-size:15px;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line)}
+.planrow .pmeta{font-size:12px;color:var(--muted);margin-top:2px}
+.tgl{flex:none;width:46px;height:27px;border-radius:var(--r-pill);border:1px solid var(--line);background:var(--soft);position:relative;cursor:pointer;transition:background .18s ease,border-color .18s ease}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:var(--shadow-1);transition:transform .18s ease}
+.tgl[aria-pressed="true"]{background:var(--green);border-color:var(--green)}
+.tgl[aria-pressed="true"]::after{transform:translateX(19px)}
+
+.askbox{margin-top:16px;background:var(--soft);border-radius:12px;padding:14px}
+.askbox h4{margin:0 0 10px;font-size:14px;font-weight:500}
+.askchips{display:flex;flex-wrap:wrap;gap:8px}
+.askchips button{font-size:12px;padding:8px 12px;border-radius:var(--r-pill);border:1px solid var(--line);background:#fff;cursor:pointer}
+
+.statgrid{display:flex;gap:8px;margin:12px 0}
+.statgrid div{flex:1;background:#fff;border:1px solid var(--line-soft);border-radius:10px;padding:10px 8px;text-align:center}
+.statgrid b{display:block;font-size:17px;font-weight:500}
+.statgrid span{font-size:11px;color:var(--muted)}
+.panelsoft{background:var(--soft);border-radius:12px;padding:14px;margin:0 0 14px}
+.bullets{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.twoup{display:flex;gap:12px;margin:14px 0 0}
+.twoup div{flex:1}
+.twoup label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.twoup span{font-size:13px}
+
+.result{border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
+.result .rlabel{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.result .rbig{font-size:20px;font-weight:500;margin:4px 0 2px}
+.result .rmeta{font-size:12px;color:var(--muted)}
+.result a{display:inline-block;margin-top:9px;font-size:13px;color:var(--blue);cursor:pointer;text-decoration:underline}
+.ticked{color:var(--green-ink);font-size:13px;margin:0 0 10px}
+
+/* ------------------------------------------------------------ echo / fit */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}
+.pills button{font-size:13px;padding:10px 13px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer;text-align:left;line-height:1.35}
+.pills.chipsline button{border-radius:var(--r-pill)}
+.example{background:var(--soft);border-radius:12px;padding:13px;margin:14px 0 0;font-size:13px;line-height:1.55}
+.example i{display:block;font-style:normal;color:var(--ink);margin-bottom:5px}
+.example span{color:var(--muted)}
+.qbubble{background:var(--ink);color:#fff;border-radius:14px 14px 4px 14px;padding:11px 13px;font-size:13px;margin:0 0 14px;max-width:88%;margin-left:auto;line-height:1.5}
+.answer{margin:0 0 14px}
+.answer .abig{font-size:16px;font-weight:500;margin:0 0 6px;line-height:1.4}
+.answer p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.55}
+.specrow3{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:12px 0 0}
+.specrow3::-webkit-scrollbar{display:none}
+.specrow3 div{flex:none;min-width:112px;border:1px solid var(--line-soft);border-radius:10px;padding:10px}
+.specrow3 label{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.specrow3 span{font-size:14px}
+.turn{border-top:1px solid var(--line-soft);margin-top:16px;padding-top:14px}
+.context{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--muted);margin:0 0 12px}
+.context .cchip{background:var(--soft);border-radius:var(--r-pill);padding:5px 10px;color:var(--ink)}
+.context button{border:0;background:none;color:var(--blue);font-size:12px;text-decoration:underline;cursor:pointer;padding:0}
+.cmpcard{border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin:8px 0 0;font-size:13px}
+.cmpcard b{display:block;font-weight:500;margin-bottom:3px}
+.cmpcard span{color:var(--muted)}
+.composer{display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:var(--r-pill);padding:7px 7px 7px 15px}
+.composer input{flex:1;min-width:0;border:0;background:none;font-family:inherit;font-size:13px;padding:8px 0;outline:none}
+.composer button{flex:none;background:var(--ink);color:#fff;border:0;border-radius:var(--r-pill);padding:10px 15px;font-size:13px;font-weight:500;cursor:pointer}
+.thinking{display:flex;gap:5px;padding:8px 0}
+.thinking i{width:6px;height:6px;border-radius:50%;background:var(--line);animation:blip 1s infinite}
+.thinking i:nth-child(2){animation-delay:.15s}
+.thinking i:nth-child(3){animation-delay:.3s}
+@keyframes blip{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* -------------------------------------------------------------- compare */
+/* selection list — desktop selection-rail structure, stacked for 375 */
+.startcar,.selrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.startcar{border-top:1px solid var(--line-soft)}
+.sthumb{flex:none;width:76px;height:52px;border-radius:8px;background:var(--media)}
+.scopy{flex:1;min-width:0}
+.scopy strong{display:block;font-size:14px;font-weight:500;line-height:1.3}
+.smeta{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.scopy small{display:block;font-size:11.5px;color:var(--muted);margin-top:4px}
+.startbadge{
+  display:inline-block;background:var(--ink);color:#fff;border-radius:var(--r-pill);
+  font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;margin-bottom:5px;
+}
+.srname{
+  display:block;background:none;border:0;padding:0;text-align:left;font-family:inherit;
+  font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;line-height:1.3;
+  text-decoration:underline;text-decoration-color:transparent;
+}
+.srrm{flex:none;width:32px;height:32px;border:0;background:none;color:var(--muted);font-size:15px;cursor:pointer;border-radius:50%}
+.selhead{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:14px 0 4px}
+.selhead b{color:var(--ink);font-weight:500}
+
+.srcchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:14px 0 10px}
+.srcchips::-webkit-scrollbar{display:none}
+.srcchips button{flex:none;font-size:13px;padding:8px 14px;border-radius:var(--r-pill);border:1px solid var(--line);background:#fff;cursor:pointer}
+.srcchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cargrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 10px}
+/* Desktop parity: the photo is the selection target and a 3px outline is the
+   entire selected state — nothing floats on top of the image. The name below is
+   its own target and opens the vehicle detail. */
+.carcard{display:flex;flex-direction:column}
+.carcard .thumb{
+  height:78px;width:100%;padding:0;border:0;border-radius:10px;background:var(--media);
+  display:grid;place-items:center;font-size:10px;color:#8b8b8b;cursor:pointer;
+  outline:3px solid transparent;outline-offset:0;transition:outline-color .15s ease;
+  font-family:inherit;
+}
+/* DS .ccard.locked: 3px text-primary border marks a locked-in selection */
+.carcard .thumb.sel{outline-color:var(--color-text-primary);outline-width:3px}
+.carcard .cname{
+  margin-top:9px;padding:0;border:0;background:none;text-align:left;
+  font-family:inherit;font-size:12.5px;line-height:1.35;color:var(--ink);cursor:pointer;
+  text-decoration:underline;text-decoration-color:transparent;
+}
+.carcard .cmeta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.emptynote{border:1px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55;margin:12px 0 0}
+.emptynote b{display:block;color:var(--ink);font-weight:500;margin-bottom:4px;font-size:15px}
+.dialog{position:absolute;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(20,20,20,.4)}
+.dialog.show{display:flex}
+.dialog .dbox{background:#fff;border-radius:var(--r-lg);padding:20px;width:100%}
+.dialog h4{margin:0 0 6px;font-size:17px;font-weight:500}
+.dialog p{margin:0 0 14px;font-size:13px;color:var(--muted);line-height:1.5}
+.dialog label{display:flex;align-items:center;gap:8px;font-size:13px;margin:0 0 16px;cursor:pointer}
+.dialog .drow{display:flex;gap:10px}
+
+/* ---------------------------------------------------------- misc / a11y */
+.rowlist{margin:0}
+.rowlist .r{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.rowlist .r span:last-child{color:var(--muted);text-align:right}
+
+:where(button,a,input,[tabindex]):focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.001ms !important;animation-duration:.001ms !important}
+}
+
+
+/* ---------------------------- guided path · list layout (variant A · list) */
+/* All three questions visible at once. Costs ~120px more than the chip row,
+   which pushes the total price below the fold at 812 — the trade-off the
+   research guide asks us to compare. */
+.glist{margin-top:10px}
+.gp-row{
+  display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 0;background:none;border:0;border-top:1px solid var(--line-soft);
+  font-size:15px;text-align:left;cursor:pointer;
+}
+.gp-row.on{font-weight:500}
+.gp-row.quiet{font-size:13px;color:var(--ink-2)}
+.gp-row .chev{color:var(--muted);font-size:18px;line-height:1}
+.gp-row .tick{color:var(--green-ink)}
+.gp-row .sum{color:var(--muted);font-size:13px}
+
+/* No edge fade on the chip row. The third chip is deliberately left part-visible
+   at the card edge, which reads as "there is more" without a gradient. */
+.gpath{position:relative}
+
+/* protection reads as a monthly block, separate from the cash ledger */
+.monthlyblock{border-top:1px solid var(--line-soft);margin-top:6px}
+.monthlyblock .lrow.total b{font-size:17px}
+
+/* comparison card: two targets — add, and preview */
+.carcard .thumb{border:0;width:100%;cursor:pointer;font-family:inherit}
+.carcard .cbody{border:0;background:none;width:100%;text-align:left;cursor:pointer;font-family:inherit}
+.carcard .cprev{font-size:11.5px;color:var(--blue);margin-top:5px}
+
+/* peek: the answer, at the size of an answer */
+.peekfig{display:flex;align-items:baseline;gap:10px;margin-top:12px}
+.peekfig b{font-size:32px;font-weight:500;letter-spacing:-.01em}
+.peekfig span{font-size:13px;color:var(--muted)}
+
+/* ------------------------------------------------- embedded in state board */
+body.embed .floatrow,
+body.embed .framecap{display:none}
+body.embed .frameWrap{margin:0 auto}
+body.embed{background:#fff}
+body.embed .frame{border-radius:0;border:0;box-shadow:none}
+
+
+/* --------------------------------------------- price block · desktop parity */
+.service{
+  display:flex;align-items:center;gap:12px;
+  border:1px solid var(--line-soft);border-radius:12px;
+  padding:11px 12px;margin:12px 0 14px;background:var(--soft);
+}
+.service .sinfo{flex:1;min-width:0}
+.service b{display:block;font-size:13.5px;font-weight:500}
+.service span{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+/* 1:4766 shows Add as an underlined text link inside the card, not a pill */
+.service button{
+  flex:none;border:0;background:none;padding:4px 0;font-size:14px;font-weight:500;
+  color:var(--ink);text-decoration:underline;cursor:pointer;
+}
+.service button.added{color:var(--green-ink)}
+
+/* ---- transparent pricing · Figma 1:4766 / 1:4793 -------------------------- */
+/* Labels muted, values dark, price drop on a band, and the total sits on the same
+   row as the link into the detail — so the list visibly adds up to the number. */
+.prices{margin:4px 0 0}
+.pr{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;padding:8px 0;color:var(--muted)}
+.pr .v{color:var(--ink)}
+.pr .info{font-style:normal;color:var(--muted);font-size:13px}
+.pr.drop{background:var(--soft);margin:2px -8px;padding:8px;border-radius:6px}
+.pr.drop .dropmark{
+  display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;
+  background:var(--ink);color:#fff;font-style:normal;font-size:11px;margin-right:8px;
+  vertical-align:-5px;
+}
+.pr.plans .v{color:var(--ink)}
+
+.totalrow{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+  background:none;border:0;border-top:1px solid var(--line);
+  margin-top:8px;padding:14px 0 6px;text-align:left;cursor:pointer;
+}
+.totalrow .tlabel{font-size:14px;font-weight:500;text-decoration:underline;text-decoration-color:var(--line)}
+.totalrow .tval{font-size:28px;font-weight:700;letter-spacing:-.01em}
+
+.prequalrow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:13px;padding:2px 0 4px}
+.prequalrow a{font-weight:500;color:var(--ink);text-decoration:underline;cursor:pointer}
+.prequalrow span{color:var(--muted)}
+
+.idrow{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);margin:2px 0 6px;letter-spacing:.03em}
+.idrow i{width:1px;height:13px;background:var(--line)}
+.saverow{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line-soft);padding:10px 0 2px}
+.saverow button{background:none;border:0;font-size:13px;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.saverow i{font-style:normal;font-size:15px}
+.legal{font-size:11.5px;color:var(--muted);line-height:1.5;margin:12px 0 0}
+.stockline{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.stockline i{font-style:normal;opacity:.7}
+
+
+/* ================= Key Features · Figma 1:18762 "At a glance" ============== */
+.featgroup{margin:20px 0 2px;font-size:16px;font-weight:400;color:var(--ink)}
+.featgroup:first-of-type{margin-top:6px}
+.featlist{margin-top:4px}
+.featrow{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;background:none;border:0;border-bottom:1px solid var(--line-soft);
+  padding:14px 0;font-size:14.5px;text-align:left;cursor:pointer;
+}
+.featrow .chev{color:var(--ink);font-size:17px;line-height:1}
+.hero .hhot.h3{left:44%;top:40%}
+
+/* ============ Does it fit my needs? · Figma 1:3201 "Chat with Echo" ======== */
+.echomark{
+  display:inline-block;width:22px;height:22px;border-radius:50%;
+  background:var(--ink);vertical-align:-5px;margin-right:9px;position:relative;
+}
+.echomark::after{
+  content:"";position:absolute;left:7px;top:7px;width:8px;height:8px;
+  border-radius:50%;background:#fff;
+}
+.pills.stacked{display:block}
+.pills.stacked button{display:block;width:100%;margin-bottom:9px;border-radius:var(--r-pill);padding:11px 16px}
+.pills.stacked.narrow button{width:auto;display:inline-block;margin-right:8px}
+
+.example{background:none;border-left:2px solid var(--ink);border-radius:0;padding:2px 0 2px 14px;margin:22px 0 0}
+.example i{display:block;font-style:normal;font-size:15px;font-weight:500;line-height:1.4;margin-bottom:7px}
+.example span{display:block;color:var(--muted);font-size:13px;line-height:1.55}
+
+.qbubble{
+  background:var(--ink);color:#fff;border-radius:14px 14px 4px 14px;
+  padding:12px 14px;font-size:14px;line-height:1.45;margin:0 0 18px;
+  max-width:82%;margin-left:auto;
+}
+.quickcard{background:var(--soft);border-radius:12px;padding:16px;margin:0 0 12px}
+.quickcard .qabig{font-size:17px;font-weight:500;line-height:1.35;margin-bottom:8px}
+.quickcard p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.55}
+.quickcard .qadiv{height:1px;background:var(--line);margin:16px 0 14px}
+
+.statrows{border:1px solid var(--line-soft);border-radius:12px;overflow:hidden}
+.statrows div{padding:12px 14px;border-bottom:1px solid var(--line-soft)}
+.statrows div:last-child{border-bottom:0}
+.statrows label{display:block;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.statrows span{font-size:15px;font-weight:500}
+
+.turnnote{margin:22px 0 16px;font-size:14px;line-height:1.55}
+.turnnote b{font-weight:500}
+
+.usingbox{
+  border:1px solid var(--line-soft);border-radius:10px;padding:11px 13px;
+  font-size:12.5px;color:var(--muted);line-height:1.6;margin:0 0 16px;
+}
+.usingbox b{color:var(--ink);font-weight:500}
+.usingbox button{border:0;background:none;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:0}
+.fitanswer{margin:0 0 16px;font-size:15px;line-height:1.5}
+.fitcard{border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin:0 0 10px}
+.fitcard.current{border-color:var(--ink)}
+.fitcard .fcmeta{margin:2px 0 6px;font-size:12px;color:var(--muted)}
+.fitcard .fcname{font-size:16px;font-weight:500;margin-bottom:8px}
+.fitcard .fcnote{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+
+.composer .send{
+  flex:none;width:34px;height:34px;padding:0;border-radius:50%;
+  background:var(--ink);color:#fff;border:0;font-size:15px;cursor:pointer;
+}
+
+
+/* ------------------------------------------- selection control · Figma 1:2563 */
+/* Built to the exported assets in ./assets: selection-center.svg is a 30px circle
+   with a #8F8B8B hairline, selection-check.svg is the green tick at 14x10. The
+   40px version this replaces read as enormous next to 14px row text. */
+.radio{
+  flex:none;width:30px;height:30px;padding:0;border-radius:50%;
+  background:#fff;border:1px solid #8F8B8B;cursor:pointer;
+  display:grid;place-items:center;transition:border-color .15s ease;
+}
+/* The tick is always in the DOM and coloured by state, so the two rules below
+   have to out-specify the generic `.tick svg` green further down the file —
+   hence `.radio .tick svg` rather than `.radio svg`. */
+.radio .tick{width:13px;height:9px}
+.radio .tick svg{width:13px;height:9px;color:transparent;transition:color .15s ease}
+.radio[aria-checked="true"]{border-color:var(--color-action-primary)}
+.radio[aria-checked="true"] .tick svg{color:var(--color-action-primary)}
+
+/* ------------------------------------------------------------------ icons */
+/* Real SVGs inherit colour from their context; they are never sized by font. */
+.ico,.dropmark,.tick{display:inline-flex;align-items:center;justify-content:center}
+.ico svg,.tick svg{width:100%;height:100%;display:block}
+.mnav .ic svg{width:18px;height:18px;color:var(--color-text-secondary)}
+.hero .htool svg{width:15px;height:15px;color:var(--color-text-primary)}
+.hero .htool[aria-pressed="true"] svg{color:#D0021B}
+.gallerypill{gap:7px}
+.gallerypill svg{width:13px;height:13px;color:var(--color-text-primary)}
+.hpager button svg{width:15px;height:15px;color:var(--color-text-primary)}
+.pr.drop .dropmark svg{width:12px;height:12px;color:#fff}
+.saverow button svg{width:15px;height:15px;color:var(--color-text-secondary)}
+.chev svg{width:16px;height:16px;color:var(--muted)}
+.tick svg{width:12px;height:9px;color:var(--color-action-primary)}
+.gp-chip .tick,.gp-row .tick{width:12px;height:9px}
+.step .chev,.gp-row .chev,.featrow .chev{width:16px;height:16px}
+
+/* ------------------------------------------ no doubled dividers in ledgers */
+/* A row's bottom hairline plus the total's stronger top border stacked into two
+   lines. The stronger one wins; the hairline above it is suppressed. */
+.lrow:has(+ .lrow.total),
+.pr:has(+ .totalrow),
+.rowlist .r:has(+ .r.total){border-bottom:0}
+.lrow.total + .lrow{border-bottom:0}
+
+
+/* --------------------------------------------- below the fold · one notice */
+.btf{border-top:8px solid var(--color-surface-subtle);padding:22px 14px 32px}
+.btfnotice{border:1px dashed var(--color-border-strong);border-radius:var(--radius-lg);padding:20px 18px;background:#fff}
+.btfnotice h3{margin:0 0 8px;font-size:var(--fs-subhead);font-weight:var(--fw-light)}
+.btfnotice p{margin:0 0 10px;font-size:13px;line-height:1.6;color:var(--color-text-secondary);font-weight:var(--fw-light)}
+.btfnotice p.why{margin:0;font-size:12px;color:var(--color-text-tertiary)}
+
+/* ===========================================================================
+   G1 · Gallery
+   ---------------------------------------------------------------------------
+   Structure taken from echopark-vdp-mobile-prototype_3.html. The sheet body
+   becomes a flex column: `.galtop` is pinned, `.gscroll` is the only thing that
+   moves. That is the whole point — you can walk 24 thumbnails without the
+   photo you are judging sliding off the top of the screen.
+   ========================================================================= */
+.sbody.flush{padding:0;overflow:hidden;display:flex;flex-direction:column}
+
+.galtop{padding:16px 18px 0;flex:0 0 auto;display:flex;flex-direction:column;gap:12px}
+.gtabs{display:flex;gap:8px}
+.gtab{
+  height:32px;padding:0 14px;border-radius:20px;border:1px solid var(--line);
+  background:#fff;cursor:pointer;font:inherit;font-size:12px;font-weight:500;
+  letter-spacing:.2px;color:var(--color-text-primary);white-space:nowrap;
+}
+.gtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.glarge{
+  position:relative;height:215px;border-radius:var(--radius-md);
+  border:1px solid var(--line-soft);background:var(--media);
+  display:grid;place-items:center;font-size:13px;color:#8b8b8b;cursor:zoom-in;
+  overflow:hidden;
+}
+.gexpand{
+  position:absolute;top:10px;right:10px;width:30px;height:30px;padding:0;z-index:2;
+  border-radius:var(--radius-circular);background:rgba(255,255,255,.92);
+  border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;
+}
+.gexpand svg{width:13px;height:13px;color:var(--color-text-primary)}
+.gcount{font-size:12px;color:var(--muted)}
+
+/* The scrolling half. min-height:0 is what lets it shrink inside the flex
+   column instead of pushing the pinned top off the sheet. */
+.gscroll{flex:1;min-height:0;overflow-y:auto;padding:12px 18px 18px}
+.gscroll::-webkit-scrollbar{width:4px}
+.gscroll::-webkit-scrollbar-thumb{background:#c9c9c9;border-radius:2px}
+
+/* Three across at 375px gives ~104px thumbnails — the 62px squares they replace
+   were too small to tell two photos of the same car apart. */
+.gthumbgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gthumb{
+  aspect-ratio:1.15;border-radius:var(--radius-sm);border:2px solid transparent;
+  background:var(--media);display:grid;place-items:center;font:inherit;
+  font-size:12px;color:#8b8b8b;cursor:pointer;padding:0;position:relative;overflow:hidden;
+}
+.gthumb[aria-pressed="true"]{border-color:var(--ink);background:#E4E3DF;color:var(--ink)}
+
+/* ------------------------------------------------------ full-screen viewer */
+.viewer{
+  position:absolute;inset:0;z-index:75;background:#0E1114;
+  display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  transition:opacity .2s ease;
+}
+.viewer.open{opacity:1;pointer-events:auto}
+.viewertop{display:flex;align-items:center;justify-content:space-between;padding:16px;color:#fff;flex:none}
+.viewertop span{font-size:13px;font-weight:500}
+.viewerclose{background:none;border:0;cursor:pointer;display:flex;padding:0}
+.viewerstage{flex:1;min-height:0;display:grid;place-items:center;padding:0 12px}
+.viewerph{
+  width:100%;height:70%;border-radius:var(--radius-sm);background:#1B2026;
+  display:grid;place-items:center;color:#8A9299;font-size:13px;
+}
+.viewerbottom{display:flex;align-items:center;justify-content:center;gap:24px;padding:20px 16px 26px;flex:none}
+.viewerbtn{
+  width:44px;height:44px;border-radius:var(--radius-circular);padding:0;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);
+  display:grid;place-items:center;cursor:pointer;
+}
+.viewerbtn:disabled{opacity:.3;cursor:default}
+.viewercount{color:#fff;font-size:13px;min-width:64px;text-align:center}
+
+/* The sheet close control is real artwork now, not a ✕ character. */
+.sheet .sx{display:grid;place-items:center;width:24px;height:24px;padding:0}
+.sheet .sx .ico{width:18px;height:18px;color:var(--color-text-primary)}
+
+/* ------------------------------------------------------------------ photos */
+/* Real photography from the DS prototype. `cover` on the hero so the frame is
+   filled the way a production VDP fills it — the white .94 pills are only worth
+   judging against an image that reaches the edges. */
+.hero .hphotos img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.glarge.hasphoto{background:#000}
+.glarge img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.viewerstage img{width:100%;max-height:100%;object-fit:contain;border-radius:var(--radius-sm)}
+
+/* --------------------------------------------- glyph replacements, sized here */
+/* Every one of these was a text character until now. They are real artwork, so
+   they need explicit sizing and alignment rather than riding on font-size. */
+.mloc{display:flex;align-items:center;gap:6px}
+.mloc .locpin{width:15px;height:15px;flex:none}
+.gx{display:grid;place-items:center;width:22px;height:22px;padding:0}
+.gx .ico{width:15px;height:15px;color:var(--muted)}
+.srrm{display:grid;place-items:center}
+.srrm .ico{width:12px;height:12px;color:var(--muted)}
+.sheet .sback{display:flex;align-items:center;gap:5px}
+.sheet .sback .ico{width:14px;height:14px;flex:none}
+.ticked,.fcnote{display:flex;align-items:flex-start;gap:7px}
+.ticked .tick,.fcnote .tick{width:13px;height:10px;flex:none;margin-top:5px;color:var(--color-action-primary)}
+.linkrow a{display:inline-flex;align-items:center;gap:5px}
+.linkrow a .ico{width:14px;height:14px;flex:none}
+
+/* ============================================================================
+   Icons at 18 x 18
+   ----------------------------------------------------------------------------
+   24 was too heavy next to 12-15px labels; 18 is the size the DS mobile
+   prototype uses and it sits correctly against the surrounding type. Two
+   exceptions, both deliberate: the check inside a selection radio is 13 x 9,
+   because selection-check.svg is drawn at that size against a 30px ring, and the
+   price-drop arrow keeps its 24px disc.
+   ========================================================================== */
+.mnav .ic svg{width:18px;height:18px}
+.hero .htool svg{width:18px;height:18px}
+.hero .gallerypill svg{width:18px;height:18px}
+
+.gexpand svg{width:18px;height:18px}
+.sheet .sx{width:24px;height:24px}
+.sheet .sx .ico{width:18px;height:18px}
+.gx{width:24px;height:24px}
+.gx .ico{width:18px;height:18px}
+
+.mloc .locpin{width:18px;height:18px}
+.sheet .sback .ico{width:18px;height:18px}
+.linkrow a .ico{width:18px;height:18px}
+.saverow button svg{width:18px;height:18px}
+.chev,.step .chev,.gp-row .chev,.featrow .chev{width:18px;height:18px}
+.chev svg{width:18px;height:18px}
+.srrm{width:24px;height:24px}
+.srrm .ico{width:18px;height:18px}
+
+/* ------------------------------------------------------------- hero pager */
+/* Chevrons, not arrows. The shafted arrow is the DS artwork, but at pager size
+   it fills the pill and reads as clutter beside a three-word label. This is the
+   same arrowhead with the shaft removed — same stroke weight, cap and join — not
+   a different icon. If a chevron gets exported, swap it in here. */
+/* Counter only — the arrows are gone, so the pill shrinks to the number. */
+.hero .hpager{gap:0;padding:6px 12px}
+
+/* --------------------------------------------------------------- no shadows */
+/* Same reasoning as the gradients: separation is a hairline, not a shadow. The
+   controls over the photo sit on their own .94 white ground and do not need to
+   float above it. Structure is unchanged — nothing moved, only the shadow left. */
+.hero .htool,
+.hero .hhot,
+.hero .gallerypill,
+.hero .hpager,
+.hero .hchips .hpill{box-shadow:none}
+
+/* ------------------------------------------------- no borders over the photo */
+/* The .94 white ground already separates these from the photograph. A hairline
+   on top of it draws a second edge around every control and turns the top of the
+   hero into a row of boxes. Same call as the shadows. */
+.hero .hchips .hpill,
+.hero .htool,
+.hero .gallerypill,
+.hero .hpager{border:0}
+
+/* -------------------------------------------------- stock and VIN, copyable */
+/* Both values get a copy control because both are things a shopper reads out to
+   somebody else. No rule above or below — the price rows already close the
+   block, and a second hairline here put two edges within 12px of each other.
+   Spacing is symmetric: the same 18px above and below the row. */
+.stockline{
+  border-top:0;margin:18px 0;padding:0;
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center;
+}
+.copyval{
+  display:inline-flex;align-items:center;gap:7px;padding:0;border:0;background:none;
+  font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer;text-align:left;
+}
+.copyval .copyico{width:14px;height:14px;flex:none;color:var(--color-text-secondary)}
+
+/* The legal note keeps the same 18px rhythm rather than its old 12px. */
+.legal{margin:18px 0 0}
+
+/* The service contract now sits after the price block, outside it, so it needs
+   the block's own horizontal padding. */
+.pblock + .service{margin:14px 18px 0}
+
+/* ------------------------------------------------ one price drop, everywhere */
+/* The reduction was a green text row inside the breakdown ledger and a marked
+   grey row in the price block. Same fact, two presentations. The price block's
+   is the established one, so the ledger adopts it: grey ground, dark disc with
+   the arrow, and the label reads "Price drop" in both places. */
+.lrow.drop{
+  background:var(--soft);margin:2px -8px;padding:8px;border-radius:6px;
+  border-bottom:0;color:var(--color-text-primary);
+}
+.lrow.drop .dropmark,
+.pr.drop .dropmark{
+  display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;
+  background:var(--ink);color:#fff;font-style:normal;margin-right:8px;
+  vertical-align:-5px;flex:none;
+}
+.lrow.drop .dropmark svg,
+.pr.drop .dropmark svg{width:12px;height:12px;color:#fff}
+.lrow.drop > span:first-child{display:inline-flex;align-items:center}
+
+/* ------------------------------------------- the two price-block links match */
+/* They are peers. The total is the only thing on that row with any weight. */
+.totalrow .tlabel{
+  font-size:13px;font-weight:500;color:var(--ink);
+  text-decoration:underline;text-decoration-color:currentColor;
+}
+
+/* ============================================================================
+   The decide control
+   ----------------------------------------------------------------------------
+   Permanent, and the only thing that opens the guided drawer. A full-width row
+   with a chevron rather than a pill: a pill reads as a filter chip — something
+   that toggles a view — and this expands a panel. The chevron flips while the
+   drawer is open so the control shows its own state.
+   ========================================================================== */
+.modetab{flex-wrap:wrap}
+.deciderow{
+  flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px;border:1px solid var(--line);border-radius:12px;
+  background:#fff;font:inherit;font-size:13px;font-weight:500;
+  color:var(--color-text-primary);cursor:pointer;text-align:left;
+}
+.deciderow[aria-expanded="true"]{background:var(--soft);border-color:var(--soft)}
+.deciderow .dchev{width:18px;height:18px;flex:none;color:var(--color-text-secondary)}
+
+
+/* ------------------------------------------------------ no grey seam at 8px */
+/* The below-the-fold notice used an 8px grey rule as a section break. Against a
+   white page it reads as a rendering gap, not a divider, and that is exactly the
+   kind of thing a client stops on. A hairline does the same job silently. */
+.btf{border-top:1px solid var(--line-soft);padding:22px 14px 32px;background:#fff}
+
+/* ---------------------------------------------------- the sheet reads as one */
+/* At peek the scrim used to be off entirely, so a white sheet sat on a white
+   page with a hairline between them. It is on at peek too, just lighter — enough
+   to separate the two surfaces without making a half-open sheet feel modal. */
+.scrim.show{opacity:1}
+.sheet[data-snap="peek"] ~ .scrim,
+.scrim.peek{background:rgba(20,20,20,.18)}
+
+/* ------------------------------------------------- no scrollbars on a phone */
+/* Phones do not paint a persistent scrollbar, and showing one in a mobile
+   concept invites the wrong read of the design. Scrolling still works — mouse
+   wheel, trackpad, drag — the track is just not drawn. */
+#scrollarea, .sbody, .gscroll, .frame *{scrollbar-width:none;-ms-overflow-style:none}
+#scrollarea::-webkit-scrollbar,
+.sbody::-webkit-scrollbar,
+.gscroll::-webkit-scrollbar,
+.frame *::-webkit-scrollbar{width:0;height:0;display:none}
+
+/* --------------------------------------------- the stats align with the text */
+/* `.qspecs` carried its own 14px padding from when it sat outside the price
+   block. Inside the block that stacked on the block's own 14px and indented the
+   row by 28px while the title, location and price rows sat at 14px — the gap
+   Louis spotted. It now starts flush with them and runs off the right edge,
+   which is what a horizontal scroller should do: the cut-off chip is the
+   affordance. */
+/* Directly under the hero now, so it uses the page's own 14px gutter and runs
+   off the right edge — the cut-off chip is the affordance that says there is
+   more. */
+.qspecs{padding:12px 0 2px 14px;margin:0}
+
+/* ================================================= variant A, lighter ======
+   The module was a bordered white card sitting on a white page — a heavier
+   object than anything else above the fold, for a panel that is really just the
+   expanded half of a row. It now carries the same soft grey ground as the
+   collapsed row and the price callout, with no border. One component, two
+   states, one weight.
+   ========================================================================== */
+.gpath{
+  margin:12px 14px 0;padding:12px 14px 14px;border:0;
+  border-radius:var(--radius-md);background:var(--soft);
+}
+.gpath h3{font-size:14px;font-weight:500}
+.gpath .gsub{font-size:12px}
+.gpath .gx{display:grid;place-items:center;width:24px;height:24px;padding:0}
+.gpath .gx .ico{width:18px;height:18px;color:var(--color-text-secondary)}
+/* Chips on a grey ground need a white fill to stay legible. */
+.gpath .gp-chip{background:#fff;border-color:transparent}
+
+/* The collapsed row matches it: same ground, no border, so expanding and
+   collapsing changes the height and nothing else. */
+.deciderow{background:var(--soft);border:0}
+.deciderow[aria-expanded="true"]{background:var(--soft)}
+
+/* ------------------------------------------------ nothing sits on a border */
+/* The below-the-fold notice had a rule above it, so the service-contract block
+   read as resting on a line. Borderless — the whitespace is the break. */
+.btf{border-top:0;padding:22px 14px 32px;background:#fff}
+
+/* ------------------------------------------------- D and D2 are one component */
+/* D2 previously used plain text plus a small bordered "Go to" chip while D used a
+   text control plus a pill — two vocabularies for the same bar. They share the
+   `.pnav-where` control now; only the label differs. */
+.pnav-chev{display:inline-flex;width:16px;height:16px;color:var(--muted);flex:none}
+.pnav-where .pnav-label{display:flex;align-items:baseline;gap:8px;min-width:0}
+.pnav-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pnav-price{flex:none;font-weight:500}
+
+/* ================================================= the toast, in our language ==
+   It was a dark floating pill — the iOS toast. This is a web page, and every
+   other surface on it is a light rounded card on the page's own ground, so the
+   dark pill read as borrowed from a different product. Same behaviour, same
+   position, same dismissal: it just speaks the page's vocabulary now, and leans
+   on the sheet's elevation to say it is temporary rather than on a colour
+   nothing else here uses.
+   ============================================================================= */
+.gtoast{
+  background:#fff;border-radius:12px;
+  box-shadow:0 10px 30px -8px rgba(20,20,20,.22), 0 2px 8px rgba(20,20,20,.06);
+}
+.gtoastmain{color:var(--color-text-primary);padding:12px 6px 12px 12px}
+.gtmsg{font-size:13px;color:var(--muted)}
+.gtmsg b{color:var(--color-text-primary);font-weight:500}
+.gtchev{color:var(--color-text-secondary)}
+.gtx{border-left:1px solid var(--line-soft);width:40px}
+.gtx .ico{color:var(--muted)}
+
+/* The back affordance, wherever it appears. */
+.sheet .sback{display:flex;align-items:center;gap:5px;padding:0 0 6px}
+
+/* ============================================================================
+   Greyscale
+   ----------------------------------------------------------------------------
+   This is a wireframe going back into Figma for approval, so it carries no
+   colour. Everything is remapped at the token level rather than patched per
+   rule, so flipping it back is deleting this block.
+
+   The one thing colour was doing that grey cannot: marking links. Blue text was
+   the whole affordance on "20 mi away" and on every inline action. Without it
+   they read as ordinary copy, so **every link is underlined** — which is what a
+   link should have been anyway, and is the accessible default.
+   ========================================================================== */
+:root{
+  --color-text-link:#242C33;
+  --color-action-primary:#242C33;
+  --color-action-primary-hover:#000000;
+  --green-ink:#242C33;
+  --green-soft:#EDECE9;
+  --blue:#242C33;
+}
+
+/* Links carry their own affordance now. */
+.mloc a,
+.linkrow a,
+.result a,
+.context button,
+.gcallout button,
+.sheet .sback,
+.prequalrow a,
+.totalrow .tlabel,
+.copyval,
+a[data-act]{text-decoration:underline;text-underline-offset:2px}
+.mloc a{color:var(--color-text-primary);cursor:pointer}
+
+/* The ZIP in the header is a control, not body copy. */
+.mnav .zip{color:var(--color-text-primary);text-decoration:underline;text-underline-offset:2px}
+/* The wordmark loses its green half. */
+.mnav .logo b{color:var(--color-text-primary)}
+
+/* Two hard-coded colours the tokens do not reach. */
+.mloc .locpin svg path{fill:#6b6b6b}
+.hero .htool[aria-pressed="true"] svg{color:var(--color-text-primary)}
+
+/* The saved-car comparison entry is a row, not a callout. It is earned — it
+   exists only because a car was saved — so it states the status and offers the
+   action, on white, ending in a chevron. Against the grey decide callout that is
+   a different class of object, which is the whole point: the two were reading as
+   one component printed twice. */
+.cmprow{
+  flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 0;border:0;background:none;font:inherit;font-size:13px;
+  color:var(--color-text-primary);cursor:pointer;text-align:left;
+}
+.cmprow b{font-weight:500}
+.cmprow-copy{color:var(--muted)}
+.cmprow-chev{width:18px;height:18px;flex:none;color:var(--color-text-secondary)}
+.modetab{gap:8px}
+.modetab .gcallout{padding:12px}
+
+/* The decide callout sits full-width in the entry row. */
+.decidecallout{flex:1 1 100%;margin:0}
+
+/* A dev-rail control that has no effect on the current variant reads as broken;
+   dimming says "not applicable here" instead. */
+/* Dimmed *and* inert. A control that moves but changes nothing is worse than one
+   you cannot reach — it makes the reviewer doubt the rest of the panel. */
+.seg.inactive{opacity:.45;pointer-events:none}
+
+/* ==================================== one component, two states ============
+   The collapsed row and the expanded panel are the same control. They were
+   drifting: 13px label against 14px heading, 12px padding against 12/14/14, and
+   a chevron in an 18px box against one in a 24px box, so the label and the
+   chevron both jumped on expand. Everything below exists to make the first line
+   and the chevron land on exactly the same pixels in both states.
+   ========================================================================= */
+.gpath{padding:12px;margin:12px 14px 0}
+.gpath .gtop{align-items:flex-start;gap:10px}
+.gpath h3{font-size:13px;font-weight:500;line-height:18px}
+.gpath .gsub{font-size:12px;margin-top:3px}
+
+/* The chevron box matches the collapsed row's exactly, and flex-start puts its
+   top edge on the title's top edge — so it centres on the first line in the
+   expanded state and on the only line in the collapsed one. */
+.gpath .gx{width:18px;height:18px;padding:0;flex:none}
+.gpath .gx .ico{width:18px;height:18px;color:var(--color-text-secondary)}
+
+/* The collapsed row states its half of the contract explicitly. */
+.deciderow{padding:12px;font-size:13px;line-height:18px;align-items:flex-start}
+.deciderow .dchev{width:18px;height:18px}
+
+/* ------------------------------------------- key features · group hierarchy */
+/* Two things the panel was missing. The group headings sat at the same weight as
+   the feature rows beneath them, so nothing marked where one group ended and the
+   next began — the reader had to parse the words to find the structure. And 20px
+   between the sections was not enough separation to read as a break at all.
+   32px above each group after the first, and the headings carry weight. */
+.featgroup{
+  margin:32px 0 2px;font-size:16px;font-weight:var(--fw-medium);color:var(--ink);
+}
+.featgroup:first-of-type{margin-top:6px}
+
+
+/* ============================================================================
+   Pointer-gated hover, and press feedback for touch
+   ----------------------------------------------------------------------------
+   Hover is not wrong on a mobile page — it is ungated hover that is. A phone has
+   no hover, and on most mobile browsers a `:hover` rule *sticks* after a tap:
+   the control keeps its hover styling until you touch something else, which
+   reads as a stuck or half-pressed button. Gating on `(hover: hover) and
+   (pointer: fine)` means a mouse gets hover and a finger never does, so nothing
+   sticks — and it keeps the prototype feeling alive while the team reviews it on
+   a desktop, which is where it is actually being judged.
+
+   Touch gets what it should have had instead: a press state. `:active` fires on
+   finger-down and clears on release, which is the real mobile equivalent.
+   ========================================================================== */
+@media (hover:hover) and (pointer:fine){
+  .gp-chip:hover{border-color:var(--ink)}
+  .btn.primary:hover{background:var(--color-action-primary-hover);border-color:var(--color-action-primary-hover)}
+  .btn.ghost:hover{background:var(--color-surface-subtle)}
+  .pills button:hover{border-color:var(--ink)}
+  .srname:hover{text-decoration-color:var(--line)}
+  .srrm:hover{background:var(--soft);color:var(--ink)}
+  .carcard .cname:hover{text-decoration-color:var(--line)}
+  .gp-row:hover{color:var(--ink)}
+  .radio:hover{border-color:var(--color-text-secondary)}
+  .copyval:hover{color:var(--color-text-primary)}
+  .copyval:hover .copyico{color:var(--color-text-primary)}
+  .deciderow:hover{border-color:var(--color-text-secondary)}
+  .deciderow:hover{background:#EDECE9}
+}
+
+/* Press feedback — every pointer, but it is for touch. */
+.btn:active,
+.hpill:active,
+.gtab:active,
+.gthumb:active,
+.step:active,
+.featrow:active,
+.gp-chip:active,
+.gp-row:active,
+.deciderow:active,
+.gcallout button:active,
+.copyval:active,
+.radio:active,
+.hero .htool:active,
+.hero .gallerypill:active,
+.hero .hpager button:active,
+.viewerbtn:active,
+.gexpand:active,
+.pnav-where:active,
+.pnav-decide:active{
+  filter:brightness(.94);
+  transition:none;
+}
+
+
+/* --------------------------------------------- the module's own base rules */
+/* Lines 51-55 of the module stylesheet. They lived in the shell block that §3.2
+   says to drop, but the markup depends on them: without `p{margin:0}` every card
+   and Echo bubble inherits UA paragraph margins and the flow doubles in height.
+   Wrapped in :where() so they carry ZERO specificity — a plain `.m-dock button`
+   selector out-specifies `.m-chip` and silently strips every chip and pill in
+   the module, which is exactly what happened on the first pass. */
+:where(.m-scroll, .m-dock, .m-pinned) :where(p, h1, h2){margin:0}
+:where(.m-scroll, .m-dock, .m-pinned) button{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left}
+
+/* The module owned the whole 375x812 frame and `.m-scroll` was the flex child
+   that scrolled. Inside our sheet it plays the same role. */
+.sbody.flush .m-scroll{flex:1;min-height:0;overflow-y:auto}
+.sbody.flush .m-dock{flex:0 0 auto}
+
+/* ============================================================================
+   Car comparison concepts  ·  ported from car-comparison-mobile-concepts/
+   ----------------------------------------------------------------------------
+   Three concepts inside the existing comparison path — A is the control (the
+   desktop modal translated straight down, no AI), B and C are the mobile form of
+   desktop Concepts 1 and 2. Everything from `.m-topbar` down in the module's
+   stylesheet, with its wireframe-local tokens mapped onto DS tokens per §3.3 of
+   the handoff, and its own top bar dropped because our sheet already has one.
+
+   Prefix stays `m-`: the handoff recommended bumping it to `cmp-`, but in THIS
+   host that is backwards — `cmp-` is already the action namespace here
+   (`cmp-src`, `cmp-add`, `cmp-preview`, `cmp-remove`), while `m-` collides with
+   nothing but the `#m-below` anchor id. Grep verified, both directions.
+   ========================================================================== */
+
+.m-scroll{display:flex;flex-direction:column;gap:16px;padding:16px}
+.m-scroll::-webkit-scrollbar{width:0}
+
+.m-head{flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.m-h1{font-size:22px;line-height:26.4px;color:var(--color-text-primary)}
+.m-intro{font-size:14px;line-height:22px;color:var(--color-text-tertiary)}
+
+.m-current{flex-shrink:0;display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.m-current-thumb{width:96px;height:72px;flex-shrink:0;border-radius:4px;background:var(--media)}
+.m-current-copy{flex:1 0 0;min-width:0;display:flex;flex-direction:column;gap:6px}
+.m-badge{width:111px;height:18px;flex-shrink:0;align-self:flex-start;display:flex;align-items:center;justify-content:center;padding:4px 8px 4px 7px;border-radius:100px;background:#E4E4E4}
+.m-badge-label{font-size:12px;line-height:1.4;color:#000;white-space:nowrap}
+.m-current-meta{font-size:12px;line-height:16px;letter-spacing:1px;color:var(--color-text-tertiary)}
+.m-current-nameblock{display:flex;flex-direction:column}
+.m-current-name{font-size:14px;line-height:1.5;letter-spacing:-0.4px;color:var(--color-text-primary)}
+
+.m-selcount{flex-shrink:0;font-size:12px;line-height:16px;letter-spacing:0.8px;text-transform:uppercase;color:var(--color-text-tertiary)}
+
+/* selections become a horizontal strip on a phone — the desktop
+   stacked list would eat the whole viewport before any results show */
+.m-selstrip{flex-shrink:0;display:flex;gap:10px;align-items:flex-start;overflow:hidden}
+.m-selchip{width:104px;flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+.m-selchip-thumb{position:relative;width:104px;height:72px;border-radius:8px;background:var(--media)}
+.m-selchip-remove{position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:11px;background:var(--color-text-primary);display:flex;align-items:center;justify-content:center}
+.m-selchip-meta{font-size:10px;line-height:14px;letter-spacing:0.6px;color:var(--color-text-tertiary)}
+.m-selchip-name{font-size:12px;line-height:16px;color:var(--color-text-primary)}
+
+.m-empty{flex-shrink:0;display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px;background:var(--soft)}
+.m-empty-title{font-size:18px;line-height:25px;color:var(--color-text-primary)}
+.m-empty-body{font-size:13px;line-height:20px;color:var(--muted)}
+.m-step{display:flex;gap:10px;align-items:flex-start;padding-top:6px}
+.m-step-num{width:22px;height:22px;flex-shrink:0;border-radius:11px;background:var(--color-text-primary);display:flex;align-items:center;justify-content:center}
+.m-step-num-label{font-size:12px;line-height:18px;color:#fff}
+.m-step-copy{flex:1 0 0;min-width:0;padding-top:2px;font-size:13px;line-height:19.5px;color:var(--color-text-primary)}
+
+.m-tabs{height:44px;flex-shrink:0;display:flex;gap:20px;align-items:stretch;border-bottom:1px solid #D5D8D7;overflow:hidden}
+.m-tab{display:flex;align-items:center;padding:10px 0;border-bottom:3px solid transparent}
+.m-tab-active{border-bottom-color:#000}
+.m-tab-label{font-size:14px;line-height:20px;color:var(--color-text-tertiary);white-space:nowrap}
+.m-tab-active .m-tab-label{color:#000}
+
+.m-list{flex-shrink:0;display:flex;flex-direction:column;gap:20px}
+.m-card{flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+.m-card-pic{position:relative;width:100%;height:190px;flex-shrink:0;border-radius:12px;background:var(--color-border-default)}
+.m-card-heart{position:absolute;right:10px;top:10px;width:32px;height:32px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center}
+.m-card-rank{position:absolute;left:10px;top:10px;padding:5px 9px;border-radius:14px;background:#fff;font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.6px;color:var(--color-text-primary)}
+.m-card-add{position:absolute;right:10px;bottom:10px;height:32px;display:flex;gap:6px;align-items:center;padding:0 12px;border:1px solid var(--color-border-strong);border-radius:16px;background:#fff;font-size:12px;line-height:14px;color:var(--color-text-primary);white-space:nowrap}
+.m-card-add-on{border-color:var(--color-text-primary);background:var(--color-text-primary);color:#fff}
+.m-card-meta{display:flex;flex-direction:column;gap:2px}
+.m-card-title{font-size:16px;line-height:22px;color:var(--color-text-primary)}
+.m-card-sub{font-size:14px;line-height:20px;color:var(--color-text-tertiary)}
+.m-card-price{font-size:18px;line-height:24px;font-weight:700;color:var(--color-text-primary)}
+
+.m-resulthead{flex-shrink:0;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.m-resulttitle{font-size:16px;line-height:22px;font-weight:500;color:var(--color-text-primary)}
+.m-note{flex-shrink:0;font-size:12px;line-height:18px;color:var(--color-text-tertiary)}
+
+.m-ask{flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:12px;background:var(--color-surface-subtle)}
+.m-ask-label{font-size:11px;line-height:15px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--color-text-primary)}
+.m-ask-q{font-size:18px;line-height:25px;color:var(--color-text-primary)}
+.m-input{height:44px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 5px 0 14px;border:1px solid #7A8388;border-radius:22px;background:#fff}
+.m-input-copy{flex:1 0 0;min-width:0;font-size:13px;line-height:18px;color:var(--color-text-primary);white-space:nowrap;overflow:hidden}
+.m-input-tools{display:flex;gap:2px;align-items:center;flex-shrink:0}
+.m-input-btn{width:34px;height:34px;flex-shrink:0;border-radius:17px;display:flex;align-items:center;justify-content:center;background:#fff}
+.m-input-btn-dark{background:var(--color-text-primary)}
+
+.m-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.m-chip{height:32px;display:flex;align-items:center;padding:0 12px;border:1px solid #AEB3B5;border-radius:16px;background:#fff;font-size:12px;line-height:16px;color:var(--color-text-primary);white-space:nowrap}
+.m-chip-active{border-color:var(--color-text-primary);background:var(--color-text-primary);color:#fff}
+
+.m-filter{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:8px;background:var(--color-surface-subtle)}
+.m-filter-copy{font-size:12px;line-height:16px;color:var(--color-text-primary)}
+.m-textbtn{font-size:11px;line-height:16px;color:var(--color-text-tertiary);text-decoration:underline;white-space:nowrap}
+
+.m-footer{flex-shrink:0;display:flex;flex-direction:column;gap:8px;padding:12px 16px 16px;border-top:1px solid var(--color-border-default);background:#fff}
+.m-footer-helper{font-size:12px;line-height:16px;color:var(--color-text-tertiary);text-align:center}
+.m-cta{height:48px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:var(--color-text-primary);font-size:16px;line-height:20px;font-weight:500;letter-spacing:0.4px;color:#fff}
+.m-cta-off{background:var(--color-border-default);color:#9AA0A5}
+
+.m-dock{flex-shrink:0;display:flex;flex-direction:column;gap:10px;padding:14px 16px 16px;border-top:1px solid var(--color-border-default);background:#fff}
+.m-dock-top{display:flex;align-items:center;justify-content:space-between}
+.m-thread{display:flex;flex-direction:column;gap:9px}
+.m-msg{display:flex;flex-direction:column;gap:3px}
+.m-msg-user{padding-left:42px}
+.m-msg-label{font-size:10px;line-height:14px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--color-text-tertiary)}
+.m-bubble{padding:11px 12px;border-radius:10px;background:var(--color-surface-subtle);font-size:13px;line-height:18px;color:var(--color-text-primary)}
+.m-bubble-user{background:var(--color-text-primary);color:#fff}
+
+
+/* ---------------- comparison results (screen 4) ---------------- */
+.m-cmp-top{flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.m-cmp-heading{display:flex;flex-direction:column;gap:2px}
+.m-cmp-title{font-size:16px;line-height:22px;font-weight:500;color:var(--color-text-primary)}
+.m-cmp-sub{font-size:12px;line-height:18px;color:var(--color-text-tertiary)}
+.m-cmp-edit{height:32px;flex-shrink:0;display:flex;align-items:center;padding:0 12px;border:1px solid #AEB3B5;border-radius:16px;background:#fff;font-size:12px;line-height:16px;color:var(--color-text-primary);white-space:nowrap}
+
+.m-cmp-shell{flex-shrink:0;display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.m-cmp-labels{width:112px;flex-shrink:0;background:#F4F5F5}
+.m-cmp-track{flex:1 0 0;min-width:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none}
+.m-cmp-track::-webkit-scrollbar{display:none}
+.m-cmp-col{width:168px;flex-shrink:0;scroll-snap-align:start;border-left:1px solid var(--line);background:#fff}
+.m-cmp-label,.m-cmp-value{height:54px;padding:9px 11px;border-bottom:1px solid var(--line);font-size:12px;line-height:17px;color:var(--color-text-primary);overflow:hidden}
+.m-cmp-label{font-weight:700}
+.m-cmp-label-head,.m-cmp-head{height:140px}
+.m-cmp-head{position:relative;padding:10px 11px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.m-cmp-badge{align-self:flex-start;padding:2px 8px;border-radius:100px;background:#E4E4E4;font-size:10px;line-height:14px;color:#000;white-space:nowrap}
+.m-cmp-thumb{width:64px;height:42px;flex-shrink:0;border-radius:4px;background:var(--color-border-default)}
+.m-cmp-name{font-size:12px;line-height:15px;flex-shrink:0;font-weight:700;color:var(--color-text-primary)}
+.m-cmp-vmeta{font-size:11px;line-height:14px;color:var(--color-text-tertiary)}
+.m-cmp-value-strong{font-weight:700}
+.m-cmp-note{flex-shrink:0;font-size:11px;line-height:16px;color:var(--color-text-tertiary)}
+.m-cmp-hint{flex-shrink:0;display:flex;gap:6px;align-items:center;font-size:11px;line-height:16px;color:var(--color-text-tertiary)}
+
+
+
+/* The hint chevron is an 8x13 inline glyph in the module, not a 24px icon. */
+.m-cmp-hint .ico{width:8px;height:13px;flex:none;color:var(--color-text-tertiary)}
+.m-cmp-hint{display:flex;align-items:center;gap:6px}
+
+/* The module's search glyph was authored white-on-dark; ours inherits
+   currentColor, so the dark button has to set it. */
+.m-input-btn svg{width:18px;height:18px}
+.m-input-btn-dark{color:#fff}
+.m-cmp-edit{white-space:nowrap}
+
+/* A screen-level action in the sheet header, beside the close. */
+.sact{
+  flex:none;height:32px;padding:0 14px;border-radius:var(--radius-circular);
+  border:1px solid var(--ink);background:#fff;color:var(--ink);
+  font:inherit;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;
+}
+
+/* A pinned region above the comparison scroller — flow 1 keeps the current
+   vehicle here, because the board says it stays visible throughout. */
+.m-pinned{flex:0 0 auto;padding:16px 16px 0}
+.m-pinned .m-current{margin:0}
+
+/* The selection chip's remove control is a white glyph on a dark disc; ours
+   inherits currentColor, so the disc has to set it. */
+.m-selchip-remove{color:#fff}
+.m-selchip-remove svg{width:12px;height:12px}
+
+/* ------------------------------------------------- stats, plain on white */
+/* The chips were grey bubbles sitting directly above the decide callout, which
+   is also grey — two objects of the same weight competing at the top of the
+   page. Values are plain now, on the page's own ground, divided by the same
+   hairline the identity row uses. */
+.qspecs{gap:0;align-items:center}
+.qspec{flex:none;font-size:13px;color:var(--color-text-primary);white-space:nowrap;padding:0 14px}
+.qspec:first-child{padding-left:0}
+.qspec label{
+  display:block;color:var(--muted);font-size:11px;text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:2px;font-weight:400;
+}
+.qspecs i{flex:none;width:1px;height:26px;background:var(--line-soft)}
+
+/* The save control reads its state from the mark, not from colour: outline when
+   unsaved, filled when saved, with the ground darkening to confirm it. */
+.hero .htool[aria-pressed="true"]{background:var(--ink)}
+.hero .htool[aria-pressed="true"] svg{color:#fff}

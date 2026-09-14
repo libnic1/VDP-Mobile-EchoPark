@@ -1,0 +1,2142 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoPark VDP — Mobile Guided Path (v1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="figma-capture.css">
+<script src="figma-capture-runtime.js"></script>
+<script>document.documentElement.classList.add('figma-capture-mobile');</script>
+</head>
+<body>
+
+<!-- =========================================================================
+     EchoPark VDP 2.0 — Mobile Guided Path · SA-0777 · 27 Aug 2026
+
+     Scope: above the fold only. Below-the-fold is a stub, present solely to
+     prove the page does not change length when a path opens.
+
+     Built on mobile-screens/above-01-default-keyfeatures.html. The shell,
+     class names, and sheet chrome come from that file so approved work merges
+     back without a rename pass. What is new here is the guided-path module,
+     the three entry variants, and the three-snap sheet.
+
+     Shopper-facing copy follows
+     ~/Documents/Editorial Templates/Designer Voice/Humanizer - Editorial Guidance.md
+     — no unearned claims, no system language, choice labels a shopper would say.
+
+     State IDs (S0–S7, P1.x, P2.x, P3.x, G1–G7) match the Codex handoff and the
+     state board. Deep-link with ?state=P1.4.
+     ====================================================================== -->
+
+<div class="stage">
+<aside class="side">
+  <div class="pagecap">
+    <b>Mobile guided path.</b> Pick an entry variant below, then use the phone.
+    The sheet has three stops — drag or tap its handle to move between them.
+    Variants D and D2 reveal their bar once you scroll past the hero.
+  </div>
+
+  <div class="railrow">
+    <h4>Entry variant</h4>
+    <div class="seg" id="railEntry">
+      <button data-act="entry" data-v="none">None (S0)</button>
+      <button data-act="entry" data-v="B" class="on">B · toast</button>
+      <button data-act="entry" data-v="C">C · price</button>
+      <button data-act="entry" data-v="D">D · persistent nav</button>
+      <button data-act="entry" data-v="D2">D2 · nav + price</button>
+      <button data-act="entry" data-v="A">A · bar</button>
+    </div>
+    <div class="railnote">A is last on purpose — it is the heaviest treatment, and leading with
+      it framed the whole set as variations on a permanent module. A is the one variant that does
+      not use the drawer: its "Help me decide" row expands the panel in place and collapses back
+      to the row. Every other variant routes into the drawer.</div>
+  </div>
+
+  <div class="railrow">
+    <h4>Bar layout (variant A)</h4>
+    <div class="seg" id="railLayout">
+      <button data-act="layout" data-l="chips" class="on">Chips</button>
+      <button data-act="layout" data-l="list">List</button>
+    </div>
+    <div class="railnote">Only affects variant A — it is the only variant with a panel in the
+      page — so it is inert until A is selected. Chips fit above the fold with the total price
+      and the third option peeks and scrolls; list shows all three at once but pushes the total
+      price below the fold. The research guide asks for exactly this comparison.</div>
+  </div>
+
+  <div class="railrow">
+    <h4>Pay path shape</h4>
+    <div class="seg" id="railPay">
+      <button data-act="paymode" data-m="layers" class="on">Layers</button>
+      <button data-act="paymode" data-m="scroll">One scroll</button>
+    </div>
+    <div class="railnote">Inert until "What will I pay?" is open — there is nothing to reshape
+      until then. One scroll is the literal desktop translation: 2.2 screens of vertical movement
+      inside the sheet. Layers keeps every step under one screen at the cost of a tap. Same
+      content either way.</div>
+  </div>
+
+  <div class="railrow">
+    <h4>Comparison concept</h4>
+    <div class="seg" id="railCmp">
+      <button data-act="cmp-concept" data-c="1" class="on">1 · Ask Echo search</button>
+      <button data-act="cmp-concept" data-c="2">2 · Ask Echo side panel</button>
+    </div>
+    <div class="seg" id="railCmpScreen" style="margin-top:8px"></div>
+    <div class="railnote">Inert until "How does it compare?" is open. Two flows, from Figma
+      <code>60:38334</code>. Flow 1 gives each step room — ask, narrow, choose, compare — with the
+      current vehicle pinned throughout. Flow 2 keeps Echo docked while the results change beneath
+      it, and every filtered view can be cleared back to all favorites. The comparison is capped at
+      five cars: the one being viewed plus four added. The no-AI control that used to sit here is
+      gone; the board carries two concepts, not three.</div>
+  </div>
+
+  <div class="railrow">
+    <h4>Jump to state</h4>
+    <select id="railState"></select>
+  </div>
+
+  <div class="railrow">
+    <h4>Qualification</h4>
+    <label class="chk"><input type="checkbox" id="cbPrequal"> Prequalified</label>
+    <label class="chk"><input type="checkbox" id="cbTrade"> Trade-in added</label>
+    <label class="chk"><input type="checkbox" id="cbSaved"> Vehicle saved</label>
+  </div>
+
+  <div class="railrow">
+    <h4>Frame</h4>
+    <div class="seg" id="railH">
+      <button data-act="h" data-h="short">700</button>
+      <button data-act="h" data-h="" class="on">812</button>
+      <button data-act="h" data-h="tall">926</button>
+    </div>
+    <div style="margin-top:8px"><button data-act="reset">Reset session</button></div>
+  </div>
+</aside>
+
+<div class="frameWrap">
+  <p class="framecap" id="framecap">S1 · entry A · question bar</p>
+  <div class="frame" id="frame">
+
+    <!-- ------------------------------------------------------------ mnav -->
+    <div class="mnav">
+      <div class="mnav-left">
+        <span class="ic" data-act="stub" data-msg="Menu" id="icMenu"></span>
+        <span class="logo">Echo<b>Park</b></span>
+      </div>
+      <div class="mnav-right">
+        <span class="zip">75214</span>
+        <span class="ic" data-act="stub" data-msg="Search" id="icSearch"></span>
+        <span class="ic" data-act="stub" data-msg="Saved vehicles" id="icHeart"></span>
+        <span class="ic" data-act="stub" data-msg="Account" id="icAccount"></span>
+      </div>
+    </div>
+
+    <div id="scrollarea">
+
+      <!-- ------------------------------------------------------------ hero -->
+      <div class="hero" id="hero">
+        <!-- Double-tap the photo to open it full screen — the gesture the DS
+             prototype uses. The expand control beside it does the same thing for
+             anyone who does not think to try. -->
+        <div class="hphotos" id="hphotos" data-act="hero-tap"><img id="heroImg" alt="Vehicle photo" draggable="false"></div>
+        <!-- Chips sit over the image, top-left, matching Figma 1:14867 and the DS
+             mobile prototype. Putting them below the hero was an unforced change on
+             my part; it also cost 33px of a viewport that has none to spare. -->
+        <div class="hchips">
+          <button class="hpill" id="chipKF" data-act="path" data-p="features" aria-pressed="false">Key Features</button>
+          <button class="hpill" data-act="stub" data-msg="Similar Cars is a below-the-fold section — out of scope this round" aria-pressed="false">Similar Cars</button>
+        </div>
+        <div class="htools">
+          <button class="htool" id="favBtn" data-act="save" aria-label="Save this vehicle" aria-pressed="false"></button>
+          <button class="htool" id="icExpand" data-act="gallery" aria-label="Expand media"></button>
+        </div>
+        <!-- Markers stay off until Key Features is opened, so the default hero is
+             clean and the dots never read as damage indicators. -->
+        <button class="hhot h1" data-act="hot" data-hot="1" hidden>1</button>
+        <button class="hhot h2" data-act="hot" data-hot="2" hidden>2</button>
+        <button class="hhot h3" data-act="hot" data-hot="3" hidden>3</button>
+        <button class="gallerypill" data-act="gallery" id="galleryPill">Gallery (24)</button>
+        <!-- No arrows. On a phone you swipe; a pair of chevrons is desktop furniture
+             that costs a third of the hero's bottom edge to say what the gesture
+             already says. The counter stays, because that is information. -->
+        <div class="hpager" id="hpager"><span id="heroCount">1 of 24</span></div>
+      </div>
+
+      <!-- Only conditional entries live here now, so at rest this row is not
+           rendered at all and the price block moves up. -->
+      <!-- The stats ride directly under the hero, above everything else. They are
+           the first thing a shopper checks and they cost 60px; putting them below
+           the identity block, or below the price block, made the cheapest facts
+           on the page the most expensive ones to reach. -->
+      <!-- Plain on white, divided by hairlines rather than sitting in grey
+           bubbles. The bubbles put a second grey object directly above the
+           decide callout, and the two competed for the same read. -->
+      <div class="qspecs">
+        <div class="qspec"><label>Mileage</label>34,000 mi</div><i></i>
+        <div class="qspec"><label>Transmission</label>Automatic</div><i></i>
+        <div class="qspec"><label>Seats</label>5 seats</div><i></i>
+        <div class="qspec"><label>Fuel economy</label>27 / 35 mpg</div><i></i>
+        <div class="qspec"><label>Engine</label>2.0L Turbo</div>
+      </div>
+
+      <!-- "Help me decide" is permanent, and it is the one control that opens the
+           drawer. It is a full-width row with a chevron rather than a pill
+           because a pill reads as a filter chip — something that toggles a view —
+           and this expands a panel. The chevron flips while the drawer is open,
+           so the control shows its own state. -->
+      <div class="modetab" id="modetab" hidden>
+        <!-- Two shapes, painted in renderShell(). Variant A is the only one that
+             expands a panel in place, so it is the only one that gets the
+             chevron; everywhere else this opens the drawer, and a callout with a
+             "Show me" link says that honestly. A chevron would promise an
+             expansion that never happens. -->
+        <div id="helpEntry" hidden></div>
+        <!-- Same format as the "What would help you decide?" callout, not a lone
+             pill. Both are the page offering the shopper a next move; a pill
+             reads as a filter and put the two on different footings. Copy is
+             deliberately the third guided question's own words, because it is the
+             same destination — how these two entry points should finally relate
+             is still open (see the handoff). -->
+        <!-- Not a question and not a promo bar. The shopper answered "how does it
+             compare?" by saving a car, so this states what they have and offers
+             the one action that follows. A row on white beside a grey offer
+             cannot be mistaken for a second copy of it. -->
+        <button class="cmprow" id="cmpEntry" data-act="path" data-p="compare" hidden>
+          <span class="cmprow-copy"><b id="cmpCount">1 saved car</b> · compare with this one</span>
+          <span class="ico cmprow-chev"></span>
+        </button>
+      </div>
+
+      <!-- ------------------------------- guided path · entry variant A (S1) -->
+      <div class="gpath" id="gpath" hidden>
+        <div class="gtop">
+          <div>
+            <h3>What would help you decide?</h3>
+            <p class="gsub">Start with the question that matters most.</p>
+          </div>
+          <!-- A chevron, not an ✕. This panel collapses back to the "Help me
+               decide" row; it is not dismissed. The control has to say which. -->
+          <button class="gx" data-act="decide-open" aria-label="Collapse"><span class="ico gpchev"></span></button>
+        </div>
+        <div id="gchips"></div>
+      </div>
+
+      <!-- ------------------------------------------------------ price block -->
+      <!-- Transparent pricing, per Figma 1:4766 / 1:4793. The itemisation is
+           visible by default rather than hidden behind a toggle: price, document
+           fee, and the price drop are all on the page, and the link into the
+           buying flow sits on the same row as the total those lines add up to.
+           It reads "Buying options", not "View price details": the destination is
+           the same, but once Car Comparison took the sticky-bar slot, the phrase
+           the shoppers and the client both use for this flow had disappeared from
+           the page entirely. -->
+      <div class="pblock">
+        <h2>Volkswagen Tiguan SE</h2>
+        <div class="idrow"><span>34K MILES</span><i></i><span>2024</span></div>
+        <div class="mloc"><span class="ico locpin" id="locPin"></span>At EchoPark Grand Prairie <a data-act="location">20 mi away</a></div>
+
+
+        <div class="prices">
+          <div class="pr"><span>Price</span><span class="v">$29,997</span></div>
+          <div class="pr"><span>Document fee</span><span class="v">$225</span></div>
+          <div class="pr drop"><span><i class="dropmark" id="icDrop"></i> Price drop</span><span class="v">−$3,000</span></div>
+          <div class="pr plans" id="prPlans" hidden><span>Protection plans</span><span class="v" id="prPlansVal"></span></div>
+        </div>
+
+        <!-- "Price breakdown", not "Buying options" — Buying options is the
+             footer button, and two controls with one name is a trap. Same visual
+             strength as Get prequalified below it: they are peers, and the total
+             beside it is the only thing on this row that should shout. -->
+        <button class="totalrow" data-act="breakdown-entry">
+          <span class="tlabel">Price breakdown</span><span class="tval" id="vdpTotal">$27,222</span>
+        </button>
+
+        <div class="prequalrow">
+          <a data-act="prequal-entry">Get prequalified</a><span>no impact to your credit score</span>
+        </div>
+
+
+        <!-- return state (S6 / P1.8): what the path leaves behind -->
+        <div class="pterms" id="pterms" hidden></div>
+
+        <!-- guided path · entry variant C (S4) -->
+        <div class="gcallout" id="gcallout" hidden>
+          <span><b>What would help you decide?</b></span>
+          <button data-act="showme-c">Show me</button>
+        </div>
+
+        <!-- Both values are things a shopper reads out to someone else, so both
+             are copyable. No rule underneath: the row above already closes the
+             price block, and a second line here was two edges in 12px. -->
+        <div class="stockline">
+          <button class="copyval" data-act="copy" data-v="29058692">
+            <span>Stock 29058692</span><span class="ico copyico"></span></button>
+          <button class="copyval" data-act="copy" data-v="3VVNX7B20PM336989">
+            <span>VIN 3VVNX7B20PM336989</span><span class="ico copyico"></span></button>
+        </div>
+        <p class="legal">In Texas, price excludes required taxes, tag, title and includes a
+          $225 documentary fee.</p>
+      </div>
+
+
+      <!-- The service contract trades places with the stats. It is an offer, not a
+           fact about the car, so it reads better after the price it modifies. -->
+      <div class="service">
+        <div class="sinfo">
+          <b>Vehicle Service Contract</b>
+          <span>Optional repair coverage &nbsp;+$48/mo</span>
+        </div>
+        <button id="vscAdd" data-act="vsc-add">Add</button>
+      </div>
+
+      <!-- ------------------------------------------- below the fold (notice) -->
+      <!-- One block, not five section-shaped stubs. The stubs read as real
+           sections that happened to be empty, and stakeholders could not be
+           expected to tell the difference. This states the position plainly. -->
+      <div class="btf" id="m-below">
+        <div class="btfnotice">
+          <h3>Below the fold is still in progress</h3>
+          <p>This round covers the above-the-fold experience and the guided decision
+             paths. The sections planned below — vehicle highlights, the important
+             stuff, key features and specs, ride protection, EchoPark Promise and
+             similar cars — are still being worked through and are deliberately not
+             represented here.</p>
+          <p class="why">Nothing below this point is designed yet, so nothing here is
+             clickable.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ------------------------- guided path · entry variant D · persistent nav -->
+    <!-- Extends the existing .jumpnav component from mobile-screens. It appears once
+         the hero scrolls past and stays. Two halves: where you are, and what would
+         help you decide. Costs nothing above the fold, and it answers the complaint
+         that mobile shopping becomes blind swiping. -->
+    <div class="pnav" id="pnav">
+      <!-- D  — where you are + what would help you decide
+           D2 — CarMax's model adapted: identity and price ride along too. We do not
+                repeat the primary action here the way CarMax does, because our sticky
+                bottom bar already holds it; duplicating it would spend 56px to say
+                the same thing twice. -->
+      <!-- D and D2 are the same component. Two slots: a text control on the left
+           with a chevron, and one pill on the right. D2's only difference is what
+           the left slot says — identity and price instead of the section you are
+           in. It had drifted into its own vocabulary (plain text plus a small
+           bordered "Go to" chip), which made moving between the two variants feel
+           like moving between two design systems. -->
+      <button class="pnav-where" id="pnavId" data-act="pnav-goto" hidden>
+        <span class="pnav-label"><span class="pnav-name">Volkswagen Tiguan SE</span>
+          <span class="pnav-price">$27,222</span></span>
+        <span class="pnav-chev"></span>
+      </button>
+      <button class="pnav-where" id="pnavWhere" data-act="pnav-jump">
+        <span class="pnav-label" id="pnavSection">Vehicle Highlights</span>
+        <span class="pnav-chev"></span>
+      </button>
+      <button class="pnav-decide" data-act="pnav-decide">Help me decide</button>
+    </div>
+
+    <!-- ---------------------------------- guided path · entry variant B (S2) -->
+    <!-- An actual toast: one line, one action, dismissible, sitting above the
+         sticky bar. It is a nudge toward the drawer, not the drawer itself —
+         opening the sheet on a timer was the thing that read wrong. The "Help me
+         decide" row stays at the top of the page underneath it; the toast is a
+         second way in, not the only one. -->
+    <div class="gtoast" id="gtoast" role="status">
+      <button class="gtoastmain" data-act="toast-open">
+        <span class="gtmsg"><b>Not sure where to start?</b>
+          Three questions about cost, fit, and how it compares.</span>
+        <span class="ico gtchev"></span>
+      </button>
+      <button class="gtx" data-act="dismiss" aria-label="Dismiss"><span class="ico"></span></button>
+    </div>
+
+
+    <!-- -------------------------------------------------------- sticky bar -->
+    <div class="stickybar">
+      <!-- Buying options on the VDP itself. Car Comparison is the gallery's
+           secondary action, not this one — the two were briefly conflated. -->
+      <button class="btn ghost" data-act="path" data-p="pay">Buying options</button>
+      <button class="btn primary" data-act="testdrive">Test Drive</button>
+    </div>
+
+    <!-- ------------------------------------------------------------- sheet -->
+    <div class="scrim" id="scrim" data-act="close"></div>
+
+    <div class="sheet" id="sheet" data-snap="peek" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="handlehit" id="handlehit" data-act="cycle"><div class="handle"></div></div>
+      <div class="shead">
+        <div style="min-width:0">
+          <button class="sback" id="sback" data-act="pop" hidden></button>
+          <h2 id="sheetTitle">—</h2>
+          <p class="ssub" id="sheetSub"></p>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <!-- A slot for a screen-level action beside the close. Concept C is the
+               only thing using it: its Echo dock owns the bottom of the screen,
+               so Compare has nowhere to sit down there. -->
+          <button class="sact" id="sheetAction" hidden></button>
+          <button class="sx" data-act="close" aria-label="Close"><span class="ico" id="sxIcon"></span></button>
+        </div>
+      </div>
+      <div class="stack" id="stack">
+        <div class="screen s0"><div class="sbody" id="sbody0"></div></div>
+        <div class="screen s1"><div class="sbody" id="sbody1"></div></div>
+      </div>
+      <div class="sfoot" id="sfoot" hidden></div>
+    </div>
+
+    <!-- ------------------------------------------------- full-screen viewer -->
+    <!-- Lifted from echopark-vdp-mobile-prototype_3.html rather than rebuilt.
+         Tapping the large frame or its expand control opens it; it returns to
+         wherever it was opened from. -->
+    <div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Full-screen media">
+      <div class="viewertop">
+        <span id="viewerTitle">Exterior</span>
+        <button class="viewerclose" type="button" data-act="viewer-close" aria-label="Close full screen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="viewerstage" id="viewerStage"></div>
+      <!-- Swipe here too, same reasoning as the hero. -->
+      <div class="viewerbottom">
+        <span class="viewercount" id="viewerCount">1 / 24</span>
+      </div>
+    </div>
+
+
+  </div>
+</div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------- icons ---
+   Real artwork, not glyphs. Sources:
+     · Design System/echopark-vdp-mobile-prototype_3.html — the DS inline SVGs
+     · mobile-guided-path/assets/*.svg — Figma exports (price-drop arrow, check)
+   Every icon inherits currentColor so it takes the colour of its context.
+   GAP: there is no Echo mark in either source. The chat affordance uses a plain
+   disc until a real one is exported — flagged rather than invented.
+   ------------------------------------------------------------------------ */
+const ICON = {
+  "copy": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M5 15V6a2 2 0 0 1 2-2h9\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>",
+  "chevright": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M9.25 5.5 14.75 12l-5.5 6.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "mic": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\" stroke=\"currentColor\" stroke-width=\"1.8\"/><path d=\"M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/></svg>",
+  "chevup": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M5.5 14.75 12 9.25l6.5 5.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "chevdown": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M5.5 9.25 12 14.75l6.5-5.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "chevleft": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M14.75 5.5 9.25 12l5.5 6.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "chevright": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M9.25 5.5 14.75 12l-5.5 6.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "menu": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M3 6h18M3 12h18M3 18h18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>",
+  "pin": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 21s7-6.03 7-11a7 7 0 1 0-14 0c0 4.97 7 11 7 11Z\" fill=\"#006FA6\"/><circle cx=\"12\" cy=\"10\" r=\"2.6\" fill=\"#fff\"/></svg>",
+  "heartline": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M12 20.5S3.5 15 3.5 9.4A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.5 2.1c0 5.6-8.5 11.1-8.5 11.1Z\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"/></svg>",
+  "heart": "<svg viewBox=\"0 0 24 24\"><path d=\"M12 20.5S3.5 15 3.5 9.4A4.4 4.4 0 0 1 12 7.3a4.4 4.4 0 0 1 8.5 2.1c0 5.6-8.5 11.1-8.5 11.1Z\" fill=\"currentColor\"/></svg>",
+  "account": "<svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"9.5\" fill=\"currentColor\"/><circle cx=\"12\" cy=\"10\" r=\"3.1\" fill=\"#fff\"/><path d=\"M6.6 19.2a6 6 0 0 1 10.8 0\" stroke=\"#fff\" stroke-width=\"2\" fill=\"none\"/></svg>",
+  "share": "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>",
+  "print": "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M7 9V4h10v5\" stroke=\"currentColor\" stroke-width=\"2\"/><rect x=\"4\" y=\"9\" width=\"16\" height=\"7\" rx=\"1.5\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M7 14h10v6H7z\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
+  "expand": "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M4 10V4h6M20 14v6h-6M4 4l6.5 6.5M20 20l-6.5-6.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>",
+  "grid": "<svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\"><g fill=\"currentColor\"><circle cx=\"6\" cy=\"6\" r=\"1.7\"/><circle cx=\"12\" cy=\"6\" r=\"1.7\"/><circle cx=\"18\" cy=\"6\" r=\"1.7\"/><circle cx=\"6\" cy=\"12\" r=\"1.7\"/><circle cx=\"12\" cy=\"12\" r=\"1.7\"/><circle cx=\"18\" cy=\"12\" r=\"1.7\"/><circle cx=\"6\" cy=\"18\" r=\"1.7\"/><circle cx=\"12\" cy=\"18\" r=\"1.7\"/><circle cx=\"18\" cy=\"18\" r=\"1.7\"/></g></svg>",
+  "prev": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M19 12H6M11 5.5 5.5 12 11 18.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "next": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M5 12h13M13 5.5 18.5 12 13 18.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "close": "<svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M6 6l12 12M18 6L6 18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>",
+  "arrow": "<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"><path d=\"M5 12h13M13 6.5 18.5 12 13 17.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+  "pricedrop": "<svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M14.59 16.004L5.982 7.397L7.396 5.983L16.003 14.589V7.004H18.003V18.004H7.003V16.004H14.59Z\" fill=\"currentColor\"/></svg>",
+  "check": "<svg viewBox=\"0 0 14 10\" fill=\"none\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M11.8831 0L4.74961 6.27552L2.11687 3.95944L0 5.82168L2.63274 8.13776L4.74961 10L14 1.86225L11.8831 0Z\" fill=\"currentColor\"/></svg>",
+  "search": "<svg viewBox=\"0 0 24 24\" fill=\"none\"><circle cx=\"11\" cy=\"11\" r=\"6.5\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m16 16 4.5 4.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg>"
+};
+const ico = (k,cls) => `<span class="ico ${cls||''}">${ICON[k]||''}</span>`;
+
+/* ===========================================================================
+   State
+   =========================================================================*/
+const S = {
+  entry:'B',            // none | A | B | C | D | D2 — B leads the rail now
+  dismissed:false,
+  saved:false,
+  prequal:false,
+  tradein:false,
+  plans:{vsc:false, gap:false, dent:false},
+  path:null,            // pay | fit | compare | gallery | feature | testdrive | location
+  snap:'peek',
+  pushed:false,
+  fitStage:0,           // 0 default · 1 answered · 2 asked back · 3 typed
+  fitContext:null,
+  fitOpen:null,
+  barLayout:'chips',
+  payMode:'layers',
+  payDoor:null,   // 'scroll' = one long sheet · 'layers' = answer-first doors
+  featureName:null,
+  hotspots:false,       // hero markers — set by Key Features, and they stay on
+  heroIndex:0,             // which of the 24 hero photos is showing
+  galleryCat:'exterior',   // exterior | interior | undercarriage
+  galleryIndex:0,          // 0 = the 360° lead, 1..count = stills
+  viewerOpen:false, viewerCat:'exterior', viewerIndex:0, viewerReturn:null,
+  /* NOT S.cmp — that is already the array of selected car ids, 20 references
+     deep. The handoff proposed S.cmp for the concept; in this host that name is
+     taken. */
+  cmpConcept:'1',       // 1 · Ask Echo search · 2 · Ask Echo side panel
+  cmpScreen:1,          // 1..4 within the chosen concept
+  cmp:[],               // ids of added cars
+  tdStep:0,
+  stateId:'S1'
+};
+
+/* --------------------------------------------------------------- numbers  */
+/* Reconciled to the mobile VDP price block, not the desktop drawer frames —
+   those describe a different vehicle ($33,897). See §12.8 of the handoff. */
+const N = {
+  vehicle:29997, reduction:3000, doc:225,
+  taxes:1931, tagTitle:212,
+  down:2500, tradeValue:12400, tradePayoff:4800,
+  apr:0.079, months:72
+};
+N.totalPrice   = N.vehicle - N.reduction + N.doc;                 // 27,222
+N.totalCost    = N.totalPrice + N.taxes + N.tagTitle;             // 29,365
+/* ------------------------------------------------------------------ photos ---
+   The five sample photographs from echopark-vdp-mobile-prototype_3.html, byte
+   for byte. They cycle to fill the 24 slots the pager advertises — the same
+   thing the DS prototype does. They are here so the controls that sit on the
+   photo can be judged against a real image: the .94 white pills read very
+   differently over a grey rectangle than over a dark quarter panel.
+   ---------------------------------------------------------------------------- */
+const HERO_IMAGES = ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCAIAAoADASIAAhEBAxEB/8QAHAABAQACAwEBAAAAAAAAAAAAAAECAwQFBgcI/8QASRAAAgEDAgMFBQUFBgMHBAMAAAECAwQRBSESMUEGE1FhcQcigZGhFDJCscEjUmJy0RVDgpLh8CQzUxYXNGOTorIIVHPCJYPx/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAIxEBAQEAAgIBAwUAAAAAAAAAAAERAiESMUEEI1EDE2GBsf/aAAwDAQACEQMRAD8A+zFIUqCKQoBAACgAigAAqKQAUAAAAAKQoAhSAAAAAKAIV8iAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFQC5EAoAAAAAAAAAAAAAAAAAAgAAAAAAAIAAIAAMEUIFRQAABSEFAAUKiFKBSAgoAAAAAUgApAUCAFAAAATqUgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABVyAAAAAAAAAAAAAAAAAAAAAGQpAAAAAACAACEKQogACKEAAKQEVQAAKQpUCkKRQAAAAAAAAAAVAIAAAAADAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAHQhSAAAAAIAAAEHUBgYgBFRQAFAAQCkKAKOgQQKCBVAQAAAAAAAAAoAAAAAATqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAApEUAAAAAAAAAAAAAAAAAAAAAAEKRgAAAIUgBgrMQDDAKMQChAAAAARVBCooFAIAKAAAAAAAAAABQAAAAAAQpAAAAAAAAAAAAAAAAAAAAAAAAAAAApAAAAAApABSACgAAAAAAAAEAoAAAAAAAAAAEKQAAABCgCAdCAGQrBUYlIigAAAABFUApUAARVBCoAAAAAAAAAUAAAAAAAEKQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKQCoEKAAAAAAAAAAAABAAAAAAAEKGBACgQAAQFIBAUhRiikQCKAAoACClIUqAAIoUAAAAAAAFIUAAAAAAAAAQpAAAAApAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBQAAAAAAAAAAAAAAAAAAAAAjKAIAAAYAAgDAEKQDFFIUqAAIoUhSgigEAFIBUAAAAAAAAUAAAAAAAAAA+RCkAAAAAAAAAAFAhTCpUjSWZtL1PF6/221KDdDst2cv8AU62cfaKlGVKhH0csOX0XmB7Yu/gz43dx9qusNyrX9npVJ/3dOvTp4+XFL6mij2R1PinU7Q9vriUmvdVpdVG4vzzswPteH4P5DD8H8j49T0TQrdftu1faO5f8N3KP5I3xfZyk0lda/VS/f1Orh/8AuRNH1rD8H8iHza117RrCaqW1O74ly47qcv8A5TZzH7QLaK/5UvjNAe9B8+ftGt1/cS/9Qn/ePQ62z/8AV/0Gj6ED5+vaNa9aM1/jTMl7SLBf3dT5oo98DwH/AHi2kmuGM4/BP9TfDt9Y4zKdb04ETR7g6m67TaFaVnQuNXsoVVzp98nJfBHyH2idt9W1i5elabG4oaXyqVqe0rh9d1jEPLr18DqtElZWEIJWrx+JccYyfx3Fo+6Q7S6LP7mp27+L/oculqdhV/5d7by//sR8u0m+0W7cYXGj2yqYSdWbqS4n4vD2z6YO3djoFf7+nwT6OlcV44+o0fQozjNZjJSXinkzPAWeiafbtzsNR1W0k+WLhVUvhJZ+py6Vx2gs5t2+p2mo0/8Ap3KdGfz3X1Q0e0B5bTu2ltVqzoavZ3WlVadRU3O5hilKTeFwz5NN8ny3PUJ5KKAAAAAAAAAAAAAAAAAAAYAEAAAFIBAwGAIUgEABUAARQoBRQAQACgAAAAAAAoAAAAAAAAAAAGQpAAAAAAACTlGEXKbSilltvCSPA6j2vvO0N3W0zsZOMbek+C61uceKlSf7tJfjn9F9QPVanr1rY3MbKClc3848UbWjvJR5cU3yhHPV/DJ5m97U3DqVVOVeXC3HuLOnwxWNnmrLeXqlFHDhTsdGtalrp/eSq1XxV7qpPiq1p9ZTnzb+i6HW1a83iMZPfZLx9CazeTnVu1V+5cFrYunHrKosy8+b3+J1Woanq95J4rVlFrlOpGP/AMTsLfQtRuknKMaEX1qvD/yrc5dPsp/176bfhTppL5vJNZvJ4W9nf0cSrVU8vb9o2zhTva2PeqPH83+h2Wvxo09QuKdOc5UKEmovOW1tz28Toak3lOLWenU3FlbJ1ayxKTnwvk3J7/QwlcSa228+Jm6Npf30ourxYiuFSqNJI51DRqFKK7+dSpPm3F4XpgWyJeTqVGvNZjy8XLBhKFz/AA/5jv56faN5UanxqM4lxa0Hc21tSg41Kksyak/dgub/ACRnyTydPKndJfdT/wASNU53EVhw+TM7mqlWqKm2qam1HfLxnxGn209RnXxJwhShlNLnJ8l9GaXycWda5X4Jv0NcrutTipVKdWMZcpODw/Rmn7TUdPZ44o9Oh7LtD7RnqnZdaDZaWrChinB4uO8Xdx/ClwrGcLf18QseSjqS/f8Anky+3zlynnCy9zTQdW6dXhUH3VN1JN+GUv1ONcvhkkko5WHhAlc+3rV7qvGMU5Tk/dinsv8Afid7YJzcadjbO+rY3rTUu7X8sVhyXm2l5HWdl9Oq6ndKhBZjU/5m34PD4tb+Sx1PrFjpVO1oKnTfCuuFz9fEzbhbjzdvpWv1afv3qtIvbgpuNPC9IJv6nCs9Gur51+81K5hWo16lCcJVqkkpRfPPFnDjuvU9soSTlTljK8DppxlZ9oruP4L23p3UPDjp/s5/HHASUl1wI9nL+H/K1epF+VWqv1ObZ6Z2itZcVHWJVPKpcSa+UoSO6pYeG8HIhh7Im1t0s+0mtaa6ltq9G3vLenThOt3tFOHdzk4puUNsZWG3DC2yes0DttZXclZ16bs7iD4JU5vMU+SSl08uJLPQ8/q1vR7y1r3UVK3lJ2dzF9aVb3X8pcHzZqsLKpq2hVLKv3a1awlK1hdTWZRnD7km+fDKPDlcmpM0PqdOSnFSXIyPL9g9beq6b3dxmF1RfBVpyfvRaysPz2cfWLPUFAAAAAAAAAAAAAAAAAAAQAAAAAIwABCkYGJSFRUAARVCARRQgFyIKCFAAAAAABQgAAAAAAAAAAABkD5ACkAAHH1G/tdMsqt7f3FO3tqMeKpUqPCiv99DidoNd07s9ptTUNVuI0beG2+8py6RiurfgfOKFrqHbu8pax2opTttFpy47DSG2u88KlXxz4dfJcwzvr7U/aNNxhKvpnZFPmvdr6jh9P3Yf73fLsalW3s7Onp+mUIW9pRXDCFNYSX++b5s5Gq36WaFFKMYrD4VhJLlFLokatN0upeYr3KlCg91Hk6i/RfmRi8nGs9Pr6hP9kuGkniVWXJeS8WeisdNtbH3qMM1OtSe8vh4fA5UIKEFCEVGMVhRSwkjIjCHA128VhpVxXbxJR4YerOeeO7e3TlK3sqb3fvyX5foIjyse7p0ZVrrLjWmlPx4Mrix59DgXlq7S4qRpVKNWlGT7uvRlGUZx6NNctuhyNUqx440IP3aS4fXH+uTHR6MZ1qlTEWoxxuur/0Rq9LuOFOqp1HKbiZ0b+nayk2uJNcord/E72VOC/BH/KjpNSlGrfcDXu00ljw6skupuktWlwOStZJedRf0OPbajmpe3Uk1V7uMacHviPr/ADPPyLWlGeI4WDqazcKsl4No14xY1VKiWX0Wx3mg1I0dHq12tnKdRvyisfozzlTkciep1YWFOzt8QpqHDPC3knz388izSzXXuElCKfgjU4mxzb6muUtitRy7GUqNK4axipFQfzz+hwaspVq3CnhvZHLqYo20I8pcPFLPjLf6LBhpFrK7v6dNLLk+XqRY+h9jLBUdMjcTSU626SWMRWy/JfI9rp7bpyg23w7rL6M6q3pQoUqdKK2pxUdvI59nVhCo+J4Tjz8znWfbfXhw14vPOO50faGLp3ujXy5UrqVtP+SrHb/3RR3lecKvDwTTaf0Oo7V0nPs9fOGe8pKFeDXRwmpflksJ7cm3k+7is/dfD8jm0m9jr7aUZ5qQe1SMai+KObTeEHRnf2zvdOurVPEq1KUIvwlj3X/mwzr9Nv8AOs2N4o8NLWrNOXlWpx4vm4ykv8B2cZNbrmt0efr0XQ0i4nSz3mjaj9opxXPu+JTa8s06sl8ANla+l2Y9o9pcTk1p+s0nGfhCsmt/i+F/4mfXYSU4KS5NHxz2scD0CwdGX/ESv4Qt3H8Sknn8ov5H0zsxcTraVbxrT4qiprd9emflgsV3AAKAAAAAAAAAAAAAAAAIAAAAAADoBCMpGBiUAqAAIqgFKgXoQEUKAAAAAAAUAAAAAAAAAAAAAZAwAOk7TdqtI7NWVS51O5UeFe7ShvOo+kUvFnD7cdqLbs5p8qtaqqfuN+MpPpGK6t/oeJ7MdmbrVL6HaXtXFu4+/ZWFTdUFzU5p85+CfL5JEb9O0q97ValS7S9saXDCHvadpMt4W8ealUXWT2eH8eiPQapqCo05Yf7SXJvp5m69uO6hKUnst2zRplh9pmr28h7r3pU5Lp0b/oRjlWvSdLdZRubyGIPenSl+Lzl5eXXqd6087mWWR8svkRlCGqtd2tLPeXFOOOnFl/Q6y67R2Fsm06lR+UcfmB3HQ+Z6rfq71q8u392lxOOf4dl9WdvfdtJSpzhQtUsprMptv6LB491YfZqkcPinOOc+Cy/zLxiOHNcc8Zy5PmdrYKnb2ilKcY8cnL3pJeS/I6tx/arh/CsnBlVll+pqzT29DW1O2g96qf8AKmzpry4pzua1Wm3io8rK8tzjQpurNbZM5RUJKSfC48n4PxEkhjiyuHnmcetPPvN8/qb50aWMKX0OPUpLMY95LhTfPLUU3l4XruXWmiTyYuMV5+pyXTt1yrVH5unj9TF2s5JyotVEt2o818OYHGcY77Iyo0KU6kVUXuLef8q3f0LtgzlNU6E3wp8fu564W7/RAcO/rSrS4pJKU5OUvj/RYR6LsDZOeoOtL8Cco+b6fq/geWm3UrY65x8T33ZShO1uLFqXuV41opeLSjh/Ilavp7CPurdM28tjTWr0rahOtc1I06VOPFKc3hRXmzo/+2ugKpw/bKjWfvK3nw/PBlnHp6OeL4HKubeNzaXFCSz31CcPnFo6bTdc0m/f/Cahb1JdIcfDL5PDO9oKTrU+ayuoPl53Qqzq6Xp9Rr71BQfwX+h28JrCTOk0VO2sO6az3FadPHguNo31tYsqDfFWUnnHDT97Hq+S+LDo7unPOEaZK3p3N9C4lGNG5t4Opx7JrEqb9dsHW0Lm9vt7Oj3FLGVWrdfT/RM32ukqNaNe+r1Luuo8Lz7sOeeXP4ZS8jKunsrXUNdudHd9SdO20qglCMv7ys1jvH4JJLCfh5n0nT6vcyp93tGOEl5cjpqbj7qioxxuoxWNuuEc6hNRxuUevg1KKknlMpw9Lk3b4k90+Xgcw0AAAAAAAAAAAAAAAAIwGAAAAAMAQjKRgQEKVAApFCkKEAAFUAAAAAKiFAAAAAAAAAAGM6kKazOSQGQODV1OhGTjT9+S6I49S+qz+61FeQHaSaistpI8j2t9o2g9l5O3uq0616/u29KL2z1lJrCXzfkdnKtN/ek2ce7oW17TVK9tqFzTTyoV6cZpPyTWwHhNMo0+0XaL+39Xv7XV61NJ2NrZvipWq554H7zfm4+fgl6WrrNCFf7P3lJ13Fz7rvPfxnDfC9+Zy7/SNM1CMY3un2tdQ+4501mPo1hr4HXf9lNI+2/a3Ct30VinJ1OJwXVcTTck/CTflgFjTU1uwrSlSr2s5qLzxxn18MHOjqtGccxvbuGekoxkcWfZi1Um6F1UgnJtQnBSSXgns9vPJrnoVSO1O5py/mi1/UdMeLsVqNLHvarKP81DH5HDu6ttcPfVqMv5pyX6HXXWhahw5pRoVX4d9wfmjo7vRddTfBo6q/yXlL9WOk8Xd1rKlJ5V5Skv4au35HXV7e3pyalVT+Gf0PO3Ol9pYt8PZy5x4xrQl+R1ko6vTrd3c6TqNvhPLnSk45XJJpF6Twr1NajbzTUai+EV/Q4lS0tOHe6qxfPHcp/qeZnf1qa9+neUv56U0cd6jVnvC4m/8T/UuHjXfujb05tq8m34O3l+hxp2NtwuSvJSfgqLX5nUS1C4/wCrM1PULjOe++aQTK7iPDTWI/FvmapJN7HXrUq62fA/WBHqNdv7tJ/AGO2tNMvr9zVhY3N1wY4+4pOfDnlnHLkLzQtVtKE695pN9b0YffqVbeUYx6bvkj2vst7Z9n9D0i6p61qFO1u69058DpzfuKMVF5Sa33OX7S+3fZ/VOy1zZaNqSurmvUpLu4Qmlwqact2kuSMt+PT5VOmaWpRknFtSi8px5o1O/lnen/7h9ua3jHD8eI0zlchyVdcVVJVOso7KXm10fpzOLc1Vwtx+6l7vw/qzTWuateWMtt7epqrzcpcC5INSM7Ci61dY5rl6n0ypQVhT0FQf/LulB+fHTl/RHhuzts3e28JtR7yom+J4ws4/P8j3faCcadjbVU/epX9tPC/nx+pmq8v261ire370+lP/AIW2liaXKdVc2/Hh5Lzyzykox6vHxObrU1/bOo8FRcP2urjf+NiwncSqyUbvTqKay3dKHD4bZg9zWZCOC7dyjxYUo5xk7fR+0et6LUg7K8qOnF57mr+0h8ny+GDVVp0qVOWbzT6ksbd3UnJ/D3EcF1owll8MkvBMD3+g3T7Q0bydaTo8VV1J04ptZk8+70xnx+p6ewsLSkozpW8VUX46j45J+XRfBHj+zGp2miaLG71ScqSvKj7inGm5TlFc5Y8N/wDeT19rfWlxQjdWtdVKFXeElFrLWzxlehitOzpxw+JtuXi2bJ1o0t5tLyOvhVuKu9OPBD96RvpqnB5n78vFkHmb+q9R7c2MKum3FPucxtriNacO8ivelLbZLLx58j6DawhGbkpZll7+HodRKuuFtM009RlTqpdBo97pVX9ooN7NHbHm+zt1TuqsHFrMU08PqekLAABQAAAAAAAAAAAAAQBgAAADAIAIykYGJSFKBSFIBSFAIBACgAAAABSFAAAADCrVhSjmpJR/U6i61xcUqVpTlUqLZ8OHw+r5R+Lz5Ad02orMmkvFnBudUt6L4c8UnyXj8ObOlnO6r5lc1+HP4aT3/wAz/RIlONOlnu4KLl95rm/V82BzK2o3dV/s0qUPGW30W7+hxm2897UlVeeuy+S/XJhKZhKYG7jSioxSiuiS2HH5nGdUxdbzA5bqI1yqpdTiyreZqnW8XsBzZVzW63mcCpcxisuSXqcKtqlCDx3ik/CO5MHbyreZhK4xvk89caz0pwk/N7HCrarczzw8MF6ZYTXq3ebbP5HEr6lSpf8AMnFerPLTuq9Re/Wm14ZNGd8jB6SrrtCK93im/wCGP9TiVO0NbLVOlhfxTf6HSSmYOQsHaVNauqmcqlj+KLl+bOLVuKVZ5rWdlKX732eKfzRw3I1SqeLINtWhb1M5pRXoji1dPt5JrhW66xySVdrlzNNW6VPapLEv3FvL5dPiXtHHno9r+5T+TRpqaXbQWUoL/E8myrd1J7RXBH1yzR3m7fN9WXsaqml05LMHw/4mav7L23n/AO9lranQpZXecUv3Yb/XkdfX1avUf7JKmvH7z/oOzHIr6dSpx4p1YQXjKeEddUVFNqE5T847L6mqcp1J8dSTlL96TyF5FQUsNcO3nk2UYx44ufJMwjBtm+nSlzSKrbUlVr1akoVO7iqqUZdUoLbHxZytW1a4vKbhWuXNPH7Je7HK68K/VnWNwp7Sruos8Tpw2i31yyRp1r64p0KKjxSliEUsJeb8kRGiUY7KEX4c8uTPTaf2TqTpcV7ddzN/3dKKk16t7Z9DstM0SzsJxqx4q1aPKdT8L8Uun5nNvNUs9PivtNXFR/dpQXFOXoiWq6yHY+zcs1L26ks8lGMc/mcl2XZvRZR+0Ue9r/gpzbrVJPyhy+hE9Y1d4pxem2r/ABPerJfodvpWjWOmQcqVPjqv79ao8yfxGq8n2irX2p3dOc9IrqjB8FvCdLLeUm1lc8+HQ95pdpUtbG3p11TzSjjgh9yDfRfkR11TzwvHjvg1VNQ93CfFlr0Jo7SVy8c8mqV1Bt4fE/odW6k6j96W3h0ORGO2xnRLy4qcL99+i2JZV1QpwnXblUrZcIN8o+P+/I4taUJ1lTlLhgsynL92KWW/kea1jtFWpcdanBRubn/lxayqNJbR28f1yxJpr7F2Gnx6i3H7tSk+Xin/AKnuz5F7DtUr6pK6p3U1KtavPHjDlGa2zjzTPrpqKAAoAAAAAAAAAAAAAIwAAAAAhSACMpGUYlIUiBSAKpSFKBSFRAAAAAAVAEbwBW0k23hLqzq73Vowfd264pvrjf4f1ZNSlWqSdNPEVz8I+vn5HWuMKaaTy+rby36lGNXjrycrqo3n8EZPHxfN/DC9THjhBKMIqMVyUVhL4GupUOPOrgDkyq7mDrHDqXCXU40rz91NjE12Mq5pncJHAlWr1Pux4fM0yoVqjzOTGDm1L6nH70kvicWpqkE/djKXnjBq+xPm1uX7IhIa01dTrP7kEvXc4tS5uZ86jXosHOlaqO+DVKivAI66SlN5k3J+LeTW4M7GVPHgapRWNy4OBKJhw5ycqfCjTKUVuMNapRaMHzFSql1NE6yJgynJI0zqeZrnVzJKKbb6JZbOHXu6dKbhJupVTw6dNr3X/FLkvq/IYOS6sm8RTbfJLdnEq3dOMpR4nUmvw08NJ+DlyX1fkcac61wuGbSg/wC7p5Sfr1fx28jRWr0bZcLkm1yhDdr9EXBvnVq1Ocu7XhTbTfrLn8sGupOlbU/2jhTj0ztn4dTra+o1pbUkqS8VvL5/0OFJuTbk25Pm28tjBzq+qLdUKbb/AHp7L5HXV7itX2q1G4/uraPyKqcpckzNUFznLCA4yT6Gcacn0OR+zh91ZLiUo8TajHxeyA1d1hbs2UqDk/djt4vZIxVWEH7i43+9Ll8jLjnU+/JvwXRfADl2tvQnUUJSlN+ENkvj/Q7C509V7R0Kcu5TaeUs5x4+Jho1q5Zq9OS/U72Ntlb7GKPJR7P3cp4lVoKH72X+WDvNLs7PTItJyq3MlviOZ48l0Xqd1pVjpValVuNV1h0+75abZQl9pqeTlJYXrHP8xlqt5b3tnR0+20ylpllRqOcqNGo3UrSa2dSfN7P89xpjpJXde/nKjaVO7knwuEH73q5cor038zn6XpNpp644w46z+/VqPMn8xSq0Lel3VtThTgukVhfHxONWv3yg+L8iju1cJdeRpraguUPefj0Ol+0Tn9+WfLoZxnlkVzXWnUeZyb8F0Rsg/ejnx/Q4U7ilRhmrOMF4yeDStZsYzjm5p48csg9DQXicqTxDyOjt9b06coxje0OJ8k5pHY1q2KexFdXq1bgtJwjLErifA34QjvL9EeU1Gi68Kt1io5p5ck/dx+6l5Lr45O51usqtaNNNLEe7T9Xlv6M6GtcxVxRnhOFNxzSk21OLWcNckkseuTcZfTf/AKd6X/H67UzmKo0Y/WX9D7afnz2O9q9E7Jy1KlrNeVF3VSKjUw2koZ6JeLPrVr7Rux91Lhpa/aKXhUbh+aDT1IOBaazpd7/4TUbStn9ytF/qc9brK3XigAAAAAAAAAAAAACAAAAABCkAEZSMogACAAIqoAoFQREVAAAAAAFOk1rWqen3tCjVqOlGcG3PGUuWM+C57ndNqKy+SPnHbvUKMNVo95WpRdSjiEHLD2bz+ZYV6Wdz9ohx06kakH+KEuJP4o404Tk9j5vUuq9Go529WpSn4wk0zsNM7ZahYzxdwheUsYw33c158STT9GjTOvZVaNRLkdfcOcdsPJ0+o9rNO1m2VGV5q2h3K+7cUMzgvKXA/eXrH0aOs0jUNUqdpKFG57Y6TWs1jPeVYrjj4OMoxfF8diK9ZTsqlVKUov0OZDTkluj1Nva28qMZU3GcGsqUHlP4oxq29NLbA1cec+xxj0MJUlHodvcU1FPB1dxUjHIHHlFGmaSNVe7jHO6OvraglyYZrmVJRWTh1aiWdzr62prfc4NXUVu8gdlVrpPmcStcrGzOtq36zzOJWvc9So7GpceZxKly/E4ErnPUxjLjUpNqMYrMpyeFFeLYVynWz1NNzXpW2PtM3CTWY0orM5LyXRebwjiVdRe9PT47rnczXL+VPl6vfyRwnwUuKbzWqS3cpN7vxb5sYOXUua93mMU6FHrCEt2v4pfosI41Svb28eGnipj8NPaK+P8AQ4letOptUlldIraK+BqWWiyM2tla6rVVji4I/uw2+b5s4zXRI3KHiVtLkUaY0JS8EZOnCnz3YdRryRqnmT8CKs66W0VuasTqPn6t9C8Maa33f7q/Vmuc5PZ7JdFyIMuOFP7q7yXi+X+prnUlUlmcm308jFkIrNbnJtoSnKMUstvCRx4bs7K2uKFi+OunKouUIbtevgB63S7WFKhCC3UVz8TlXEoQg28JHkl2rrU/do2VPh/jqvP0Rsj2jp3LxdQdJ9GnmK/VGcHdR1WrbyaUVKm+cW8fJnAur9VZtpNPGyZqm8rPQ6u/ue52jhza2Xh5kg5k6spbye3h0ONUv6NN4c+J+EdzqalapV/5k5S8s7GBcHZz1eSX7Kks+M3+iOLV1C7qbOs4rwguE4wASblLinmT8ZPLGSN+J22l6NO6cat0pU6D3UeUpr9EKNOkaTV1OrtmFvF4nUx9F4s9zNWtraRpybpUqcVCHvZey2S8WdbVvqGmUY04wXupKNKOyXh6fm/M6XUb6Vablczl3y+7Ti8Kkubz5/w8/F9DOK4WoVZOVT325xTit+r2b+SfzOvU5Sm28t85NLkvER4pylObzHm48WHLL6GU6tSdJ0oqNOm/wQXN9MvmzaPb9nfZ/HtFpNPULirVpOrObgofu8WzOXW9jkmn3GrOPlVo5/Jn1vQtPp6fo1lawil3VCEWl48Kz9TnOK6pGdrpkfBLn2T65bJuzv7Sq1ySlKDf0NFPs97RNKkpWc79KPL7Pd8S+WT9AOEX+FGEqEH+FIvlUx8Nh279pOitK6ndziv/ALq1U188Haaf7dNZoSS1LSrSuuvduVN/qfWZ2sX1OBd6FY3cWri0tqqfPjpRf6DTHl7P286PUaV5pF7R8XTnGaX5Ho9O9rfY6+2lqM7WXhc0nH6rKOmvPZz2cucuWl0ot9aUpQ/JnntR9kemVMuzuLq3fRNqaGwx9i0/tBo2pQUrDVbO4T/crRb+R2S3WVuvE/NN17J9VoNystQoVGuSkpU389zj0dM9ovZ18VjV1BQX/Qr95H5Zf5DpH6eB+b7b2s9uNInGGpQhWS5xurbhb+Kwen0z2928nGOq6JOHjO2rcX0f9S4PtIPC6X7W+x+otReoytJv8N1Tcfruj11jqun6jBTsL22uIvk6VVSIOWAAAAAEZSMAQpAIACoFRC9CKFIXyAA63Vtf0jRqbqapqNtaxXSpUWflzPB637bezllxR02jc6hUXJxj3cPm9/oB9PJOcYRcpyjGK5uTwj88an7aO1GqTdHR7ShaZ2So03VqfN/0OAuzXtH7WyVW++3OnLfivK3dx/y/6Fwfc9X7e9l9I4leazbd4udOlLjl8keF1n266ZQco6Rple6a5TrSVOPy3Z0ukexGTxLWdWw+tO1hn/3M9ppPss7K2EU3YO6qL8VzNy+nIdLlfObj2xdqtYuYW9lC3s6dSai+5pOckm8c2fUe11Wwsexl3e6jYUtQo0HDNvV248tR2lzi985Rnrml2ljpvdWltQoRcorFKmo7Z35eR821ntpYS7V6nYahYfabSMo0bWVSi5OLS3zB9JN55eG3JqRL05VpbdntVsYXmhaxc6QpylFWupw7ykpLmlNZwt+ZzLbsR2hubapcRWmXEFJKnO2vMxqrxTxhejaPnLtLqnOdXTK0KlvOblGnRbxHPRRbb+TZxKOrajpd661jeXFjWlLL7ipKG/p/VGsZe5vtA1q143c6Td04wjxSnwccUvHii2jz1w41ItNxqR8PvI7zS/ar2osYpXNS01Kmv/uKfBUx/NHH5M0V+0vZDWLidfXuyla1uKsuKdzpl01Jt8208ZY7Mjoqde4tHxWNxXtZJ5zb1ZU//i0dta9ve1tlhR1qrXinnhuqcKufi1n6nMWh9ldRgpaR2urWbk8Ro6tQ4VnwUtk/hk4172F1ulFztKun6jS6Tt627+DHR27O39rWswhw3+nWF1tvKnKdGT/NfQ3f95+n19rrTry3b605wqr/APVngb7TNUs2/tem3NJePDxL5o654b6p+DQH06p2t0S5y6eoOm/CvSnD9GjW72hdRzbXdCr/ACVYv6ZPmqyuRg0m8tLPjgqPoFxUrQbyn6o4NS5mn1PJQua1NYhVkvib4aldx/vE15oDvZ3MurZqldPxOq/tOq/vwgzF38pP3aaT83ko7mnXi955fkubOfS0zUNUhGpOhKFpF5pxinwrz/ifm/hg6Ky1WrbVE+6oy8cx3+DecP4M91oHtDu8q21VW17atYjxwjb1qfpJLu5fHh+AwefuLB26xLZLkjra8ui5HvdYsLK/4rihqFtClji96aWF57nX6d2MlqlRKyvKFdN7ulNS/Ut6R4mUXnkZwpvB9Tpeyu64o8dTbq0jjXHY3S7WpVhLUaCnSlw1IzrxTi/DBJyhZXzdwk9kmYKjLiUcbvkj2t/p9jZWs7ig6dyoSUEoVE05Plny6trODpJOM3wW1vc3VzPmqNtJ58lthI1sO3S1bd01mXM4s3jZcz2Vh2C7X6u1OGlfZaUv7y9qqnhfyrLPV6X7FacsVdY1qU/GlY01Ff55Zf0MXlGsr49PaPE8KPiznaT2f1bWm1penXVztnip0nw/5nt9T6/rtr2K9nlClOGiU7/U6izQpV595Ulh44m55UVnbZZfTkzyOv8Ab3XtYoRpRunp9DfioWUuCOOi4vvP5rPgZMx4fU9JvtKuHb6hbVKFVLLhUi4yS9H+Zx6VvOr9xbLm3yO0klLOd2+be7fxOvvK7eaVN+6niTXXyKjRUqd2+Gi9+tT+nh6mFKnVqz4KUJTl4RWTmWFhK89+bcaS5tc5en9Tsql1badBUoxS8Ix5v1A66Oi6hNJxoRXlKrFP8zjXNrcWklG5oypuXJvlL0fJnYS12r/d0opebN9HWqFxB297RjwT2fg/6PzIOohdXEKapwqyjBckuhqk3KTcm23zbN97au0uHTcnKDXFCT/FH+vRmgKAAAWMZTkowi5SbwopZbNltb1bmfBSXLnJ8o+p3FJW2lx3zOvKO7/E1/8Aqv8Ae5KLp+kwt0ri9cXOPvKLfuw834v6Gy61aUnKnabyxl1HtheO/Jeb+COvuLurdRVSvPurdP3Wlni/kT+8/wCJ7LyOFKsqqVKlBqMpZjTXvOUvFv8AE/8AawRXLneOKxRblUec198rPPgzuvOT95+Rw24qLWOmDbc0fscXTrS47lrenB7Uv5n1l5Ll18Djykmkkt+rLIazVHgtJVlLOZcHD4Yw8/HL+RytAtnfa5p9sll1binF4Xms/RHAc8U1BJp5y3nn8D2Xsk077b2rjcte5Z05VP8AE/dX5v5BI+9Oom9uQzk48X0NiZl0bA2YJlyBkRhDIGOBgyIBg6cHzSZhK2py6YN4A6240mlXTVSMZxfSayvqee1L2f6Detyr6ZSUn+KjmD+h7QjA+S6l7I9NqZdjd3dtLwqJVI/ozzN37M+0enz7zTLilcYezo1XTn8nj8z7+1nma50YS5xQ8qZHwKl2o9oXZWShWuNQhTj+G5p97D5vP5notJ9u+rUcR1bS7W5XWdGTpy+W6PqlSzjKLS5Po90ee1TsXo2pZd1ptu5PnOnHgl80Xy/KYz0f2z9lr9RjeTuLCo+arQ4or4o9ppXaHRtXinpup2lznkqdVZ+XM+O6p7JdKqxbsLq5tZ9FPFSP9TyN/wCzTtDp83UsZUrnh5So1OGXyeC7Ex+o3tzIfluz7X9u+yku6ndXsIR/u7uHeQ+b/RnsNF9u91BqGt6TTqR61LWTi/8AK9gPuhDxOje1XslqqjH+0PslV/guo8H15HsLa6t7umqlrXpVoNZUqc1JfQDageY13t/2X0LijfarSlVj/c0P2k/kj51r/t1eZU+z+lpLpWu5flFf1LiPtmVuzz+udtuzegprUtVoRqL+6pvjm/gj4T3/ALRO39RcErydtJ84/sKEfjsvzO+0f2J3EpRqa7qsY53lTtY8T/zPb6DFdprvt2tqfFDQdKnVfSrdy4V/lX9TyFXtb7RO2lXudPd33UvwWVLu4L1l/Vn1vQ/Z52Y0Zxlb6VTrVV/e3X7WX12XyPWUqMYwUIxjGC5RisJfBDVx8H072OdodRqKtrmo0LZy3lmbrVP6fU9vo3se7MWKjK7hcahUXN1p8MX/AIUfRlBLoZKKJtXHX6Zo+naVSVPTrG2tYL/o01F/Pmc7gWc82Z4AGPCvAxwbCSfAnJ9FkK8l2mrd9WrU1LMaNOW3nw5Z5P2k6VaUe0tvqFpVo2+sqlCvTdSKcLmC93DX7yxji8Gs4wmd0qv2y5uKdSaj3zkpSfTiMfaZ2RrdsOz2nX+kTjO+s4cUEpf8yDS4kmuTTjlfFFc/b4TfO5tr+rKrSlQlKpKXDHZbtvbxW/mdlpvazULCn3MXRuraTzO3u6EKsG/HEk9/NYOKr+8t5SoX8FUSeHGpFP8A36nY2Nx2XqUJLVNNuKe6/bWdzwzj/gkmmvh8TVZjmrV+yGox/wD5HQqun1m96ul13CP/AKc8x+TR2mg9n+zzvdPu6dW41W1u6tWlb0Lqh3KU6cHOTm02ppe6kk0m288joKnZvS71KehdpbOq2v8Aw+oR+zVF5cW8H80et060utO07spbfZ1Ur2uoJzpRnGaarRq8TUk+HGIPfODNaarjUF2m0XSNP1mnZWl3e8f9mdxT7uNNcoucM4UZyTjt0WT59Vtb3Sqyq051rWfE45pzcJRknhrbwaa+B6e/VxR1bUtZ1eySnZ1lZ2drOK4FWSShFpbONOKUsLZtxNXb/U6b7W3lxaRjxTlw3FOvQjKKqqMVNJSTWOJPl+oiV11p2w7Q2uz1OrXj+7cxjV/NZ+pzpdt3Xgoajoel3S6yUHBv8zz9a9tq0cVdMt4yznjtpzpP5ZcfoaIQtJ/3txRefx01NfNNP6FHfPUuy125fadKvLRvrQqcaX1X5Gr+zeztV5oa5Ojnkq9GSx67L8zpoW3E8RrUZes+DP8AmwZTtq1JtSpy28PeXzWRg9A+x061PvNO1fTrpYyoxqYl8k2ddc9n722x30rdN8v2jX5xR1M+FP34rP8AEjOnc1qaxRuK1P8Akqyj+THZrtIdmtYnTVSnaQqwayu6uqUn8lLJydL7Ja/qNStGy0evWlQlw1ffhFQfg22cfR9T1eV5SoUdQqR45rM6sY1FFdZPiT5I7+VfWLGhU+w32pU9P7x+/RlKMHLrlpYz8SzUuFD2c9qqmM6Va0v/AM1/TX5M5lH2W9p5yxUqaPQj4yu28fJHX2NG81ieI6nVnUziXe3ctvN5Z2FaxuY05WsNNf2enTqRp3laOalWpKOFKacsqCbk0ksr3c8i9/k6/DtLb2R3EZJXPajTKUmsONCk5N+X3kdnpns/0jRtTt5XHbGtTueJcEKNJUpt+T3aPN6VOrodpc1qNGLv6lONGl3cW2kvxN/VvxwjtOweg1H3+qanJR7vKo0rmvwOrP8AxNbeZLN+Tf4fYaNnZ0aMYuu6yS3lVrubfruee1Hst2M1K5qXV7bUpq3jxVeGrKNOK/iw0jyle5v6lCt3la0tpxglCKvKc1N9fut4+PzPP61rFNWFnpNS+s6cHeKrctXSzVT4Vh+mH5bmZxka8n2DQdO0aypxlo2lW9vCcFLMKaUmnus9fA4HanWNQs/2WmU406jeFNwTZzNF1exVtCELy1nPh99068amX5cOTj67f0biDhK2uKsUt5UbOUn85OKC306LUateorWzvv7Qq3tdJwdKup06knssp4SjnL5cj0lOpY9j+zM53VTFvZ03Ur1sb1Jt5k0vGUnsvNI0dndIbry1avC5g3Du7endNccI4w5NJ4WeSXRep8m9pna9dpNVjpmn1OLSLGeZTi9rmsuvnGPJfF9UX2np5/WdTudf1e51m/2rXD/Z085VGn+GK+H6+Jwc4LKXmYTaSy3hLmVlpva3d08Rfvy5eS8TVpdi7uq3NNUYP3n4v9046VW8u406cczqSUYLw/3zPRXU6VjZwoW+6hHCf7z6y+IHF1G8VnDu6CzN8kltE6KTnUm5Sy5Pm2cyEeObbfFJveXTJvpxafvOOPPczq46pxaHLzOzuIUZwapcHF/Cdc47yTeMAcl1ftFjibzOhLZv917f0OKbraLfeRfKVNr1NSWcYW75JAQ5VtZSq/tKzdOkt23s3/T1LTjRtfeuFx1eaguhjKdW6TqTlGFFP70vup+CX4n/AL2JRyp30YKFCxg1naLjHLl/KuvqzjVeGk33/DVrZy6fFxRi/wCN/ifktvPoa5V1GLjQi4Jr3pyeZz9X0XkvjkytrVzSqVW4UnySXvT8kiKUqNxf1288T/FObxGC/ReSORbRqUbeTpQ7qtLKdXOZY8F+6d1YadOpSj3kO7preNJfnLxZzf7Kck9gY8RjhyvAjPW1+ys7l/sPcl4mpdhdVk8U50JfzNosqY83Qpd7nMoxSWW5Sxjz8z7L7LNJ/s7RHdTpuFa8lxpNbqC2j/X4nltB9n9aneU6urVac6cHxd1T3UvV+B9asoLukkkklhJdCWtSOTE2IkYGaWCNC5lKABQkXAAFwMATAZcACJAoAhMGQAwaGDIYAwlCL5o0ztacs7HJwTBB19WwjODjKMZxf4ZLK+TPLaz2C0LUXJ1tOjSqP+8t3wP6bHucDhT5oo+Har7Ja8W5aTfxkulO4jh/NHnqnZzth2Zmq9vSu6Kjv3lpU4l8eE/SEqMJLeKONUsoveLwy7THzHRPYlUmo1Nf1VQzu6NnHifxk/6Hv9E9nvZnRnGVppVKpVj/AH1z+1l9dl8j1iikZYNJjTCliKj+FckuSNigl0M0i4IrHhKkZJACAoAAAAa66k6M1HduL/I2YLnG5R8c1LVVpzp3LU+GVVLiUeLhwnu11XNM7rSu19rQoJ2delZN5kov37apJ7743g2+u3xPL9v6FSx1a9tYxkoRauKe2zjJ749Hk8C1Wt5d7QqyUJttcL+hY5+n0TWKfY7XrmdPUaNbs1q1V8feU13lvWb/ABJfdkn4rDOmuvZxdd33lvQjqVut1d6NWU5Y/ioTec/ytHRW+ruhTSfBKmnngcU1n+V5X5HrtL9pNSeIX8IVmmsVGvfil0XvJrPlJ+gI8Lf6G7KU+5u6FeVP79Gonb14+tOphv8AwuR6Ls5e33/ZrVNHtqPdapGnLuYVlwSlTlLMnBv8UczXpU8j3tDtJo/aKhUt9WVnXST7u3vaXfya/hbUaifpxep5rW7Ps3QcLW01u+0CrUl+zoylUrUYP+WaVSl6rYiuD2juLrWb2xvdRtXY2NlH7TdQ5Ody+Hizn8UnGO3RLzPDXdSN5XuK9xcTVWrUlVS4Mpyk8vLyez1zsT2iuqdtGwurfWlTg89zWcaiz/5dRp8uqPHXuj6nYTlC+0+7t5ReGq1GUMfNFkStcbOnUb7i/tZY5Ko5UpP/ADLH1MZWVzBNujOSXNwXGvnHJx1jGU18yxlKLzCThLxi8P6FDK5Z+BYrh3isemxnK4r1Md5VlUx/1Pe/MqqrGJUqfrFOP6gTvZtY7yb8m8kzv/oV8D5Jp+pi9vEI7bQbyztJ1Z3MW6k1wx34Ul13/wB8j3ej6hWsZ0V2a1+XHXWXbTxGPF4SjN8LfmufifLW0+vkSOFtxYT6IK+sar9p1XUXW1ex7PVryEFCTrX7oNJcswjUSXPwOHU0i0+9KPZil6X1af5VDyVj2lvbGjTp1p0tQoRWFSvIOXdrwjPPEvg8eR3On9puzVzTqO7tK1hXlspqm7iC9GpRa+KfqQZ1bXTKdVpXmhwf/l2NzV/N4Ow06wjdNuyrQrqDSlK37LQmot8lxTl+Z0brdmVNzlr9Z75x/Z1R/nIxpdoNEs7vvaGp6xJrl3NvGmvlKo/yHR2+k6Bo9xKt3ajfcU1jP9jWFFLz5yZ31z2Tpaba97SvbpSi17kZ21ust45xpHzK07cWNSSxpPaDU4rnTndKMZeqhH9Tl6h2sv8AULeNvZ+zyl3bacXdOpPly8PzJivqtKzuZ1KdFQlNNbyqajN7ekUjl/2NZUlKpd0bWUYrMnOGUvWU2z5HZaz23t5wlZ6VoOkxW2aduuLHrls1a/V13WIVP7c1pyoc3SpwUYQXrhL4tF8aeUdn7SPaLDUY1NB7O3GbZ+7eXtPk49YU/FPq+vJbZZ84m4KCjTjwxjtGPgK8aNN9zaR4aEXs3zk/FmiUjUmM7rNy6s4d7XxFU113fobnNLeT2OY+y2rVvsVWduqUdQrQpW/HNcUuLk+Hmklu8mOXPjxslvtrjx5ctsnplolqqGmz1CaxUuHKjQWOUV9+Xxfu/M4FzXlVrPdSS2wnhrxO71q5t4vurJtW1GKt7d4/BHbi+O7+J0s4qEFOeG+aeORWUUVBJRzKTW2Fu+uDiyupS+7sjCdaWZKMmlJYeOq8PQ19OWfQis41ZweY4znO6NkZQknxLHEsSx9GSUIQcVwybjFcam9nLrjHJcvPmS5pujKKzmM4KpCXjF/65XqijbbYjWik8xw98Y6HFhKXeRVHidR7RUVlt+RnbOSqxx1eDZ3sKacbaMqaa4XLizOS8309Fj4kDuo0W/tGJ1f+lGW0X/E118l8WjXUnOrJOTy8YjFLCS8ElyMfKKOdYWdStL3MpcpVMfREGNtRUJpSiqlbpT6R9Tv9Ms33iq1ffqvq+UfQ22WmQpxShH4+J3ljYSysIittpbZitjtKFmnjKybrSzcUtjs6NvwoK49G0iuSObTopckjZCnvyORClggwp08dDsbRdDRGBy7aHvJhXIUTLBkTBVTBcFSKkBCpFBAwMFAGOAZYGAMcDBS4AxGDIYAwwMGYwBgMGQaAxwMGWBgCYMWjZgjQHY4KUGgQCKUTBcAEAAAAAAICMo8Z7RrRKlb6lTp05VKL4XxwUk0+jT5ryPk+s6bSo150qlv3UlvxUHhb7p45NYaa5bH3zW7KF/plxb1OUoPHk/E+Hdq13SoS7+NOpl0XOT/ZSkvw5/C+eM7bNbYIzyeWr6VVm39nnGr5L3ZfJ8/g2ZaTpF3eVK1C1naQuIpYo3NxGjOb8IKWMvy2E7mVOo6dzTlCa3w108fP1Rw9SuHV7ucpOoo5i8vOzX+hpllqNjqujz7rUrS6tM8lcU2oy9G9n8DZa6/f2tJUo15So9aNTFSk1/JLK+WDu6Wt6roE1pdrWpuFGm+/hRqSq06q3bc4SzFNJ4+6sYNMtR0DUqyjqOiQoVJtL7RYVPs7z4uO8P8A2okunRR7S2FdUYXNCpbxpz44xhOfdxl4pReF/lPQWnam/nTdKz1enXoSqcUqFaMasOH9yMd1Ff4Mo8pW0PTLiHfaXrKp0pT4I/2lbyorixnhVWPFBvDzvwnU3mn17GolcKlJP7tWjVjVhL0lFtF9j3VzLR7qrOOpdkbSpl4VXTa/cVY/zRWFn/CjrbnQ+yE6rp0tX1HTKudoXdBVqfpxxxk8xDULyDyrqrL+eXF+eTkPWbqSxU4JrweV/oDXbS7FXFSbhp2r6VeSzhQ790pv4TWPqcK97JdoLJv7Rot5j9+lDvI/OOTg1Lm1rp99ari8Vz+aOVbahXp8P2S7uKSisYhVa+gHXV7K8t5cNe0uab8J0Zr80bbXStQvZKFnp95Xm+lK3nJ/RHf0O2HaG3hwUte1GmlyUZR/VGu57X9o7hOFbtFqU4PnF3Ljn14cCadMF2G1mjFVNWdno9F78epXMaT+EE3J/Izp6d2Usd7jUNR1mqvwWNFW1H/1KmZNekTpPcnVdSdSHHJ5c5Sy38eZy6btILNS5i34JNlw12NfWLeMHR0zQNKsqb2450ndVn6zqZSfpFElO6v4Qhe1J1acW5RpzaUIt88RWEvkcON7YU5e65N+Kh/U3f23bU0+CjVk+mXFf1LMiXXLp6fa8SzbUf8AIj0uiWlpTacaFKPmqaX6HiX2iqf3drTT8ZTb/obf+1upxhigqFLw4aCb+cmzTOV9s0e3pXOIQ97+Ff0R6Kdhb2dq6ty6VClFe9UqyUEvVs/Nkte1q49+eoXUWls6dTuv/hjJpq3Gq6tc0YXl3d3nC/djXrSqJY8E3gmW+mpZH2HtD2q7M2+YUb+N3Uzh/ZIOoo/4to/U+YavrNxqNR8X7OgnmNJP6yfV/RGmvb1acUqsWjhVGo9Rdie2Mqnia5TyaqlRZNEqkny2Mq7fQtPesaza2K+7Unmo/CC3l9NvifQdf1Pubu+uaaSjplurO2x0uK695r+Skn8zpvZZZU6NDVNbuvdpW8O7Un4JcUvySOvvr2UtPt1Wf7StKpfVv56j2+UVFHzuH3vrbfjhM/uvZy+39NJ88v8AHUNK4uuGMuCFKOWsdFuzr7qvKpNt7ZfI7Wcp2ujSnUUc3b9zEWm1F8/DDb+h0UpNs+g8iHMtLeatK+oTX7GhKMIt/jqveMV44Scn5JeJxYU5VJxhDHFJpLieF8fI7DWL2nONtp9k82FlFxpyxjvqkvv1WvGTSx4RUUQdepPZp7+JtqVYztLek4riouaUvGMmml8Hn5mlblwUZUNppro2/oa4qTwsZb6I2UoSl7sE5SeyS8z02i6L3eKlWOaj6vp6EpHA0zR5TxO4WM/hPUWOmLCSjhLkjsrLTU8bHe2lhGCW25Fdda6Yo4ckdvbWeFsjmUrfdbHNp0cdArj0rfCWxyY0sG6NPBsUUTFaY00bYwwZqJnwlGvhOVbQ2ya1E5VFe6Bk0MYMiqIVii4MkipEGPCMGWBgDHBcFwXAGKiXBcDAGOBgrQwQThJgyAVMEwZEwEY4BlgYAxKhggFZCkwB2IANCgiAGQIAKCAAAQACZBRJpOEk+qPjnaXTre507UKLpJ95cVZKC2lOXFlYfJNNN588dT7HLOHhZeD4f2w1mvpV4ranbzqVFKcpJRy1u+nzYTk+f1Y3llSlTgu/tYP3oSg2qb8484P0282cSM4Vm4pOKkuTecPyfgd7W1ix1aalV4rS5SxGtDb/AP1eR1dzZSoydWrFNZyq1H7svVdPoVh6J65b1qMbm8tq8YJcNSc6KrU54puHBxrEox3zjza32Ox7PW2hKVe5hK1nau2qqs677+PCmpyxTxxxcYrHEv3k85TPG2ladpKpUt61WlUaWJ05uPz8V6m+WoxrJyvrO2ueJb1aa7mo1/NDZ/FM5T9LLsrM45enoKnYXUYu6na143NrCM5W6oy4pzqJJxpuDw+Lhe7WfkeXfexhc0FNxU/dqR8XF9fid/p3ae+o/ZKdlrM6MbR/8PR1Kkpwp5jKO1SKzjEmt0ljHged4oO4qThTjThKTcacG2orOyTfNI6xqtKpJxTjUTys+8sGLpTX4W/OO5asXSqyhvFrpkx45+IE8iLmbFV/eWfXcjcXyil6bAFOaW0n8TOOZRzLn08zDMei+e5kpTfKLfmwMe6ecuUYrzLiC5zz5IOnJrMpJDul++i6jKMqceUc+odTO3Cka3FLbPyIk+ibLKN8WzKM6UX78o/GSNMOKm+JUk8fvQyjlUNQnTqLis7LfnKVstvkXyxMcq3uLVRxFU5S8ONHZWNz9iU6soR7yaxnnwrwR28O01lqGi3E7ixtqNWlRjRs7e0oRjS/inPizJt+H15njq8ack5Ul3MusYPEfkX9y4eLmX+od9JylL0R1NWs5vbka5bvdshm3VkxHlhbGRGiK7qx1/U3o8ezlCVGnZXFX9q40/fnxPLzL08DLVKkqtWfDTclOXDGKWdlsl9EcPQoJ30qkuVKnKXx5L8zlOrL7ZTlCaThulw5z1McOHHhvjM1eXLlyzfho1mvSdw6NtBRoUVGEcJriaW8mn1css6ttrGU1lZWVzRyqlOcq7c8PilltG/WKKjT0tQ66fTl85TZajgwc+GUYrKay9stJefTmb1Y3E4RnSlSqKUVLEJ7x8n5m/S6itrW8dSMnKcY4WNnBcWc+Kb4VjP5HXJvC4luBulbV4NqpSnF422ymzVhxliS3XNM3wtLudt9phQuHbufd97GMnDiwnw5XXDRnplo7zUba2i96tWMfhnf6ID1HZzQ+CnCtWWasln+VHrrOwjHGxybOyUUko7I7a3tcdArTbWqXQ7ClRwjdSoqKN8YeQVhThjobYxM4xNkYkVio7GSibIxM1EDWomaiZqJcbBWKRyKa91GtI3wWEEVIuCpFwFTAwZYGAMcDBlgAY4LguC4AxwQzwTBBBguBgDHAMmiYAhMGQwQYYGDPBNgMcEwZ4JgDHAMiAc3IMRk0MslMQBkCDIFBMlyAAAGIKRgTJ5ftf2Xjq9FXFoo072llxly4/JnqCNlK/N2uaNbu5qxdKVrcp4mmse91yv1POzhfafJ8Mpd34x3i/6H6P7Vdk9O7Rw4rhSoXUViNzS+96NdV6nynXex2s6I5yrUvtFquVzQi5Rx/FHnH6oa52Y8G7mEsTUO6qppqVPk2uTaOdLV7a9nKWsafTnUm8yurJqhUbfVxS4JfJc+Zur2FGpRnXVOUYRlwyq01mCljOG+R1Va1qU3mPvR8UUb6/2KnXStLipWouKfFWpd3NN81hNrbxzhmqCcppP6HG9Ry5BHIuKMreeXGOJdHh7mpzi/wY9GYb9Sy4fBp/MVVcc7qS9HsThlhPheH4bkTzywyuDWJYa8wAKpvxb9SZ8l8hoNBIZfggn04UUNi58Cf4V9RnD+7H6gMvL3NtvdXNrNytritRk1hulUcW/kas+Q+AG2peXNWUXWr1KrhBU48cnLhiuSWeS8jDjlu88zKjWhRk5StbetlYxVUmvXaSNec/6EFWZPCTeCyjwzlHMXwvGYyyn6PqY5aTWXh81nmKcZ1JNU4Sk1FyaistJbt+i8QDGQnkqUebTb6LOEB2ekRxZ3dRPeUow/UxhcRpOrKdRbPHCt2SyqSjZYbxHvJNJclyNFWTqUZNNQ888/LkE+WupXc5SfjyNcq1R8HfSc+7gqcVJ54YrOF8MswexYcMmlNYiueOpFbqjco02vdg48OVHG2evi90/kaeWc/M7CtGL7O2so/f8At1ZT/wAkGjg0FxVoKf3c5foBlb3lzbuTtLmtRc1iXdVHHiXg8cz0/s3077Trsq0lmFrSbz4Sey/U8/duhVqOVOko1c8UpReE+ecrx5csdT6X7LbJ0tDqXU4+/dVm8/wx2X6gj2FCgkkkjmU6aXQtKnsciFPYNMYwM1Hc2RiZKAViomyKKoGyMQJGJkkZKJmkFYYLwmeEVRAxjE3pbEjFYM8EEwUuC4AiBcFwBiMFwAJguC4HqBjgYMsDAGOAZYJgDFk3M8EwQTAwXBMAQmDLAwBjgFGAMWiGQA3lMcgoyBCgXJTHJQKEQZAoGQBAwRgRsxkyswZRhJmmpLCZtkcavnAR4/tB2VsLuvK8teKxu8YdW3fDxLwa5P0Z851zSalnVar28Kkc717RKnJ+bh91/BI+w3jbi0eG1+3bcsmUfLa1FS3muGXU40qTjyeT1F7axbalFP1Orr2GMuDw/CRZUx1D2MlUnHZtSj4SWV9TZVo1Kf3ov1W6NDNI2OdCUcyo8MvGnLH0YXDhcFdrynFo17efwKo8WEms+exBs7tvfjpP/EY8Elz4fhIcMqe8ovHmtjKNaD6JMDFrbl9SqjVnKMadKrKUnhKMW235JHIg1JZyZ7rk/kVHDqU6lGSjXhVpN8lODi38yJRfOUvkc56tdOj9nqOnVorZQrU1P8+vnz8zhuK6IuU1i1HpKXyRH5Mz7uTWfd9MmKjnfip/5i4MqKoSqRjXqzpQ6zjSc2vhlfmbbqFhCMfsV1cVpZ3723VNJf55M0KnmXOK9ZYRtjbQ7tTnd2tNPo5uUl/himZVpK6slTdNYUHzSWM+r6kk1xNRkpxzs8Yz8OhlFQynOPEuqzjJQo8Dk4uPE3st+RhhrZ9DbUqTqOL2SgsQjFYUVz2Rqba6EHaUcR0yEpfuyl9WcOsv2aUff8o9NvI313JadGPL3EsGE5NUlmSwsNxi2srw9AkcPoshmc04TcZJpxe6fMwJVFJqOM7Zz9Bl9CvgcY4UuLfibez32wumxnGm1DvZfc6eYG7TLKvqN9QsrdN1LmahnwXVn6C0qwpWVnQtqEcU6MFCK8keI9lHZ9xoT1m6p/taq4KCa+7Dq/ifSqdLAakYwgboxM1AyUQrGMTYkWMTNRAiiZqJkomSQVjgqRnwl4QMVE2JBIzSAxSKijADAwUoEGCgCDBSkGJcFwAIQyIBMEMgBiyGTQwBiC4GAIQywTAEwTBkQCEKAMykAGWRkxKBSmJQMgQoApEXAEZGZYI0BgzGRngxkio1tGitHKOQzRV5gdVcUs5Oov8ATadeLUluejqU0zi1KS6oI+d6loUoNuKyjzl3Zum2nE+u1baEk8o6i+0OhXT93DGI+UVbddUcCvZQk+SPf6n2anHPdJnnrrSLmi3mm2vIYjylSxkvus486NWP4c+h6Krbzj96DXqjjyt2+gHRJyj+/D02Lni5yTfpudxK38Ua5W0P3Iv4AdfDjinKO6XNJr8jbTrKe2cPwZtnZU5fhx6GmdlJfdl8xqY13C4ZZ6Mxhust4XizOVOslwyjxL5i3qVLeouKVaNNrD7t7458ns/Q3ORjJOmucm/Q5FjY3V/ccOnW1WrVjvmKWF65935mv7S2/durhesEvyZyba97ht1L7VOGWP8Aw1VQfxyS0kcm67O6zToSq3GlyprGzpyprL/lUnn4I00NC1SolJ2VOnDHOv3cf/ky3tzY3NJJ1NdqSTz+2uoSj8sHHs6+j0p/8VpN1dRzzldKD+kCSq0X1u7dxjOVs57tqi4vHq47fA0UKdS4qcFCnOpLwgsnf19b0anaToab2Vs6FWXK5ua8q84eiwonUXF/d3S7uVWSpv8Au6aUI/JDR3Fjd2fZ61rydO3vNRr0qlFQa4oUozjh8fSWOaXju9jzsISm4qTwm0m2+hzrTTJ1sYz6JHaR7OVasdoNeYHUXlaMlGEJKSi8trl6GqnOLg4N9Mc2juqvZG/UeKliXk+ZwKvZ/VqUtrGrLzgskMdc8LZJLG2ywE4prijleuDmvR9T66fdZ/8AxM32nZrXLyahQ0u6bfWUOFfNgcF1LWC4o28pS/8AMnlfLY9b2D7LV+0d3G71CEo6dTecYx3r8F5HedlvZlUjUjX1903Hpbw975y/ofUbOzpW1KNOjTjCEViMYrCSCyJaWsKFKNOnBQhFYjFLZI5agkZxiZcIaYKKM1AySNiQVgoGSijLBkkBjwlSMsDAEwXBUjJARIqKMAQuAUCYBRgABgpBAXAwBAUgAAAAABAUgEBSMCBlIAIygDEFIBSkAF6lIMgUpCgUpDJAEjJIiMgIRopGyoxaMWjIjIrVM0VGb5o0SKjU1k01IZOS0YSjkDhypmicPI58oGmcPIupjr50s81k4leypVOcUdtKDMHSLpjzVzoNtVy3BHVXPZmk88EcHtpUMmqVs/AJj51cdmZLPBk62t2duYvKjlH1CpQXgcedtnoEx8rqaTXhzps487KUecGvgfVZ2UZc4L5HFq6RRqfepoYPlztPFEdsuqPpU+z9rJf8s0PszbSfJkxXzxWsf3Su3jjaJ9Al2Yt+hj/2XovqMHz127zyNUrCVTlHc+kx7LUc8zfT7OUKfT6EwfLlpFxJ+7Sk/gd5onZWrVkp3C4V4YPoNLS6dNbQ+hyaVmo8kMHSWeg29CKxBZ8TtKNlTjsopnYQt31RyKVrjfBYY4MLWLW0Ub6dqlyR2MLdeBuhQ8guOFTtVLmjm0bZJLY5EKKXQ3xhgK1wpJdDbGGDNRM0iDBIySM1EuAqRiZYMooywBgkXBkkXAEwQzwMBWOCpFwXAEKgAhgDAAAYGCAAUCAoAgKQAQoAEKQAQowAIUAYvmAAIAADIUgAAFFAQAGSMTJEGSABRkgRMZAuTHIIQAABrmaGtzkT5GlrcowI0bMEaCNTia5RRyGjBxCuO4k4Eb+EjWxRp4EYuBv4RwhMcZ0U+aMHaxfQ5nCOEGODK0XgYfY14HYqGS8A0x1Tss9COywuR23AO7yDHTOy8ifY8Hdd0jF0V4Ax0/2N+BVZvqdv3KXQqpAdUrTBsjbJdDse6RVTQHCVsvAzjRwctQMlADjxpJG2MDaoGSiRWCijJRMkjJICKJUjJIuAIkVIqRkBEilGAALgAAUAQoKBAUYAgKAICgggBSiAoAgAwQQYKAJgFAEBQBiwUjRRCGRAJghlggRiCgCAhQoAEBUZEKgKUiAFAAEBSEAMADGS2NRuZrkgMAUFGLRMGeCYA1OO44Tdwk4QNXCThN3CFEDVw5KoM2pIywgrVw7F4TZgYCNbiOE2YLgDXwl4DMuANXAOA24GANXATgNuC4A1cBVE2YJgDDhKkZ4GAMEjLBcFwFYpGWC4KBEXASKBEioFCGBgoAAAAMFAAAACAAMAoAgZWMAQFAEBSACFAAMACAACBlIBAUgRCMpAIC4AGAIigUAoFRTEyQFAAUAAABFAgAAhizIgGBMGbRMAQowUBgFRcAYYIZ4GAMEi4MsFwFY4HCzLBQjHhLgpUBjw7jBmUDDAwZNDAGGC4LgYAxwMGWABMAuBgKmAXAwBAUBBFCADBQgAAKBEUAAAAAKAICgCAoAAACAoAgAAAACAAAAAIAAIAAIRoyIEQhSAYIEKBUUxKBTJERUBS4AABgBURRgACFIAIUAQhkRoCAowABUAAwAgAKMAEVIgwQUYIUoFIAKAEAABFAAVAAARoFAEKCgQFAAAqAgKAIUAAAAAAAAAACFAAAAAAABAAAAgKQAAABAAIAUCApAIyFAGgqIVAVGSREZIIqKEioKFCKBiwXAaCIAAAACgAAMhWQAAUAAXAEAAAowALghSAMFIUAAAABQICgCFIUATBQBAUATBUC4AIBBoAAAAAAAAAAAAAApCkAAAAAQCggAAAAAABAAAYAEBSACGRABC4GAITBWANCAQAyRkiIqAzRURFQFKRAAyFZGAAQAEKAICgA+RCkAoBAKCFADAKBCgAAAAKAAAAFIXBAAKAICjAAAoEwCkAAAAAUCAoAgKQAAAAAAAACggAAAAQpABQQAAAABAKQACkKAIAAAAAEZSMCApANCKEUCoqIVAZoyRgigZFMUzLIAhSMCBgAAAAAAAAAAMgB0CRQBMFQKAGAUCYBQAAADAAAFwABAUgApCgACAUhQBCkKBCgAAAAAAAAAAABACgQFAAAAQFIAIUAQFIBSFIAIUAQoAEBSAAAAIygCEKCjQimSpy8vmXu5eXzIMUZIcD8iqD8gBRwsvCwAGC4AADDAhSYYwABcDARAXBMBQFwxgCAuBgIAYAUKAwBSACggBqghcgCkyMgUEyhlAUDJMoIoJkZAoJkZAAZGQAGRkCgmRkCgmS5AFJkZQUAyMgAMjIADIyABMoZApBkZCAGRkABkAQAAAMgABkAAMjIAhQBAUgUAAAmC4GAP/2Q=="];
+const HERO_TOTAL = 24;
+const heroSrc = i => HERO_IMAGES[((i % HERO_IMAGES.length) + HERO_IMAGES.length) % HERO_IMAGES.length];
+
+/* One photograph, in one place: the hero. It exists so the .94 white pills that
+   sit on it can be judged against a real image rather than a grey rectangle.
+   Everywhere else — gallery, thumbnails, the expanded viewer — is a plain block
+   until real photography arrives for the full set. Five sample shots cycling
+   through 24 slots at three different sizes read as a bug, and invited comments
+   about the photography rather than the design. */
+const GALLERY_PHOTOS = false;
+
+/* Counts match the hero pager: 23 exterior stills plus the 360° lead is the
+   "24 photos" the Gallery pill advertises. Interior and undercarriage carry
+   their own sets, which is why the category tabs exist at all. */
+const GALLERY = {
+  exterior:     {label:'Exterior',      count:23, lead:'360\u00B0 view'},
+  interior:     {label:'Interior',      count:14, lead:'360\u00B0 view'},
+  undercarriage:{label:'Undercarriage', count:6,  lead:'photo'}
+};
+const galleryTotal = cat => GALLERY[cat].count + 1;
+
+const PLANS = {
+  vsc :{name:'Vehicle service contract', mo:48},
+  gap :{name:'GAP protection',           mo:12},
+  dent:{name:'Dent protection',          mo:11}
+};
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const PAY_LAYERS = {};   // filled by renderPay, read by the door actions
+
+function financed(){
+  let base = N.totalCost;
+  if (S.tradein) base += -N.tradeValue + N.tradePayoff;
+  if (S.prequal) base -= N.down;
+  return Math.max(base, 0);
+}
+function monthly(){
+  const r = N.apr/12, n = N.months, p = financed();
+  const base = p * r / (1 - Math.pow(1+r, -n));
+  return base + planMonthly();
+}
+function planMonthly(){
+  return Object.keys(PLANS).reduce((a,k)=> a + (S.plans[k] ? PLANS[k].mo : 0), 0);
+}
+
+/* --------------------------------------------------------------- content  */
+const QUESTIONS = [
+  {id:'pay',     label:'What will I pay?'},
+  {id:'fit',     label:'Does it fit my needs?'},
+  {id:'compare', label:'How does it compare?'}
+];
+
+const CARS = [
+  {id:'c1', name:'2023 Honda CR-V EX',           meta:'41K mi · $28,410', why:'More cargo room behind the second row, at a lower total price.',  src:['similar','saved']},
+  {id:'c2', name:'2024 Toyota RAV4 XLE',         meta:'29K mi · $30,995', why:'Newer with fewer miles, and the strongest resale record in this group.', src:['similar']},
+  {id:'c3', name:'2023 Mazda CX-5 Carbon',       meta:'36K mi · $27,880', why:'Closest price to the Tiguan, with a higher standard equipment level.', src:['similar','saved']},
+  {id:'c4', name:'2024 Subaru Forester Premium', meta:'22K mi · $29,240', why:'All-wheel drive comes standard, and it has the lowest mileage here.', src:['similar']},
+  {id:'c5', name:'2022 Nissan Rogue SV',         meta:'48K mi · $23,995', why:'The lowest price in this group, with more miles on it.',            src:['similar']},
+  {id:'c6', name:'2024 Hyundai Tucson SEL',      meta:'31K mi · $27,150', why:'Similar size and price, with a longer remaining factory warranty.', src:['similar','saved']}
+];
+
+/* ===========================================================================
+   Shell rendering
+   =========================================================================*/
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+function chipSummary(id){
+  if (id==='pay')     return S.prequal ? money(monthly())+'/mo' : null;
+  if (id==='fit')     return S.fitStage>=3 ? 'Fits 3–4 · strollers' : null;
+  if (id==='compare') return S.cmp.length ? S.cmp.length+(S.cmp.length===1?' car':' cars') : null;
+  return null;
+}
+
+function renderChips(){
+  const el = $('#gchips');
+  if (S.barLayout === 'list'){
+    /* All three visible at once — the desktop Concept A panel translated straight
+       down. Costs about 120px more than chips, which pushes the total price below
+       the fold at 812. That trade-off is the point of the variant. */
+    el.className = 'glist';
+    el.innerHTML = QUESTIONS.map(q=>{
+      const sum = chipSummary(q.id);
+      return `<button class="gp-row ${S.path===q.id?'on':''}" data-act="path" data-p="${q.id}">
+        <span>${sum?'<span class="tick">'+ICON.check+'</span> ':''}${q.label}${sum?` <span class="sum">${sum}</span>`:''}</span>
+        <span class="chev">${ICON.arrow}</span></button>`;
+    }).join('') + `<button class="gp-row quiet" data-act="path" data-p="fit">
+        <span>Ask Echo — tell Echo what matters to you</span><span class="chev">${ICON.arrow}</span></button>`;
+  } else {
+    /* Compact row. The third option peeks past the right edge and the fade marks
+       it scrollable, rather than being cut flush where it would read as missing. */
+    el.className = 'grow';
+    el.innerHTML = QUESTIONS.map(q=>{
+      const sum = chipSummary(q.id);
+      return `<button class="gp-chip ${S.path===q.id?'on':''}" data-act="path" data-p="${q.id}">
+        ${sum ? ICON.check : ''}<span>${q.label}</span>
+        ${sum ? `<span class="sum">${sum}</span>` : ''}
+      </button>`;
+    }).join('') + `<button class="gp-echo" data-act="path" data-p="fit" title="Ask Echo" aria-label="Ask Echo">💬</button>`;
+  }
+}
+
+/* A rail control is live only in the scenario it actually changes. Dimmed and
+   inert otherwise — a switch that moves but does nothing is worse than one you
+   cannot reach, because it makes the reviewer doubt the whole panel.
+     · Bar layout — variant A's inline module is the only thing it changes.
+     · Pay path   — only has an effect inside the open "What will I pay?" sheet.
+   This has to run wherever those preconditions change, not just in renderShell():
+   opening the pay sheet goes through render(), which is how the pay control ended
+   up dimmed with the sheet sitting open in front of it. */
+function syncRail(){
+  const rl = $('#railLayout'); if (rl) rl.classList.toggle('inactive', S.entry!=='A');
+  const rp = $('#railPay');    if (rp) rp.classList.toggle('inactive', S.path!=='pay');
+
+  const rc = $('#railCmp'), rs = $('#railCmpScreen');
+  if (rc){
+    const live = S.path === 'compare';
+    rc.classList.toggle('inactive', !live);
+    rs.classList.toggle('inactive', !live);
+    $$('#railCmp button').forEach(b=>b.classList.toggle('on', b.dataset.c===S.cmpConcept));
+    /* The screen labels are concept-specific — "Empty / One added / Two added"
+       for A, "Prompt / Ranked / …" for B — so the row is rebuilt, not just
+       re-flagged. */
+    const names = (CONCEPTS[S.cmpConcept]||CONCEPTS['1']).names;
+    rs.innerHTML = names.map((nm,i)=>
+      `<button data-act="cmp-screen" data-n="${i+1}" class="${S.cmpScreen===i+1?'on':''}">${i+1} · ${nm}</button>`).join('');
+  }
+}
+
+function renderShell(){
+  /* Variant A's inline module and the drawer carry the same three questions, so
+     they never appear together — the module stands down while the drawer is up. */
+  const showBar = S.entry==='A' && !S.dismissed && S.path!=='decide';
+  $('#gpath').hidden    = !showBar;
+  const navOn = (S.entry==='D' || S.entry==='D2') && !S.dismissed;
+  $('#pnav').classList.toggle('enabled', navOn);
+  $('#pnav').classList.toggle('d2', S.entry==='D2');
+  /* One left slot or the other, never both; the pill is always there. */
+  $('#pnavId').hidden    = S.entry!=='D2';
+  $('#pnavWhere').hidden = S.entry==='D2';
+  $('#pnav').querySelector('.pnav-decide').hidden = false;
+  $('#pnavId').querySelector('.pnav-price').textContent =
+    S.prequal ? money(monthly())+'/mo' : money(N.totalPrice);
+  $('#gcallout').hidden = !(S.entry==='C' && !S.dismissed);
+  /* The decide control is permanent, but it means two different things.
+       · Variant A owns a panel in the page, so the row IS that panel's collapsed
+         state: expanding shows the module in place, collapsing returns to the
+         row. No drawer — the whole point of A is that the questions live on the
+         page, and routing it to a sheet would erase what separates A from every
+         other variant.
+       · Every other variant has no panel, so the row opens the drawer. */
+  /* The row never doubles up with a variant's own entry treatment. C's price
+     callout asks the same question in the same words; showing both is the kind of
+     redundancy that makes a set of variants look like an accident rather than a
+     comparison. A hides it while its module is expanded, for the same reason. */
+  const he = $('#helpEntry');
+  he.hidden = S.entry==='none' || S.entry==='C' || (S.entry==='A' && showBar);
+  if (!he.hidden){
+    if (S.entry==='A'){
+      /* The bar concept: this row is the panel's collapsed half, so it carries a
+         chevron and expands in place. */
+      he.className = 'deciderow';
+      he.setAttribute('role','button');
+      he.dataset.act = 'decide-open';
+      he.setAttribute('aria-expanded','false');
+      he.innerHTML = '<span>Help me decide</span><span class="ico dchev">' + ICON.chevdown + '</span>';
+    } else {
+      /* Everywhere else it opens the drawer. Same callout format as the price
+         entry — the question in full, and a link that says what happens. */
+      he.className = 'gcallout decidecallout';
+      he.removeAttribute('role');
+      he.removeAttribute('data-act');
+      he.removeAttribute('aria-expanded');
+      he.innerHTML = '<span><b>What would help you decide?</b></span>' +
+                     '<button data-act="decide-open">Show me</button>';
+    }
+  }
+  /* One guided offer on the page at a time. The saved-car comparison callout and
+     the decide entry are the same object saying the same thing in the same
+     words — stacked, they read as a duplicated component rather than two
+     choices, and "Show me" twice gives no reason to pick either. The specific
+     offer defers to the general one, because "How does it compare?" is already
+     the third question inside it. So this appears only when nothing else is
+     offering: the price callout's variant, or A with its panel expanded. */
+  const decideShowing = !$('#helpEntry').hidden || !$('#gcallout').hidden;
+  $('#cmpEntry').hidden  = !S.saved || decideShowing;
+  if (!$('#cmpEntry').hidden){
+    /* One saved car is the state this prototype models; the string is built
+       rather than hard-coded so a real count drops straight in. */
+    const n = S.savedCount || 1;
+    $('#cmpCount').textContent = n + (n===1 ? ' saved car' : ' saved cars');
+  }
+  $('#modetab').hidden   = $('#helpEntry').hidden && $('#cmpEntry').hidden;
+
+  /* Variant B used to float a card over the page. It is the drawer now: the same
+     sheet every other guided screen uses, carrying the same three questions. One
+     mechanic, one place answers appear — and the row above launches the same
+     drawer by hand, so the delayed appearance is a shortcut rather than the only
+     way in. Placeholder rules unchanged: 6s, once per session, suppressed once
+     dismissed. */
+  if (S.entry==='B' && !S.dismissed && !S.path && !toastShown){
+    clearTimeout(toastTimer);
+    /* 2.5s, not 6. Six seconds is long enough that the toast lands after the
+       shopper has already started reading, which is when an interruption is most
+       annoying; arriving while the page is still settling reads as part of it. */
+    toastTimer = setTimeout(()=>{
+      if (S.entry==='B' && !S.dismissed && !S.path){
+        toastShown = true; $('#gtoast').classList.add('show'); setState('S2');
+      }
+    }, 2500);
+  } else if (S.path || S.dismissed){
+    $('#gtoast').classList.remove('show');
+  }
+
+  // the VDP price block and the pay path share one protection state
+  // A selected plan joins the itemised list, so the page keeps adding up.
+  const added = Object.keys(PLANS).filter(k=>S.plans[k]);
+  $('#prPlans').hidden = !added.length;
+  if (added.length) $('#prPlansVal').textContent = '+' + money(planMonthly()) + '/mo';
+  const vsc = $('#vscAdd');
+  /* Add / Remove, matching desktop. "Added" states the status but leaves the
+     shopper guessing what tapping it does; the control should name its action. */
+  vsc.textContent = S.plans.vsc ? 'Remove' : 'Add';
+  vsc.classList.toggle('added', !!S.plans.vsc);
+
+  // These are peers at rest. Key Features is filled only while its panel is open —
+  // a permanently filled chip reads as a stuck toggle when nothing is toggled.
+  $('#chipKF').setAttribute('aria-pressed', S.hotspots ? 'true' : 'false');
+
+  /* Outline when it is an offer, filled when it is a fact. Colour used to carry
+     this — the saved heart went red — and greyscale took that away without
+     replacing it, so the control looked saved before anyone had saved anything. */
+  $('#favBtn').innerHTML = S.saved ? ICON.heart : ICON.heartline;
+  $('#favBtn').setAttribute('aria-pressed', S.saved ? 'true':'false');
+  $('#favBtn').setAttribute('aria-label', S.saved ? 'Saved — tap to remove' : 'Save this vehicle');
+
+  // return state left behind by Path 1
+  const pt = $('#pterms');
+  if (S.prequal){
+    pt.hidden = false;
+    pt.innerHTML = `<span class="flag">Terms available</span>
+      <span style="margin-left:8px">${money(monthly())}/mo · ${N.months} months · ${(N.apr*100).toFixed(1)}% APR (est.)</span>`;
+  } else pt.hidden = true;
+
+  renderChips();
+  $('#cbPrequal').checked = S.prequal;
+  $('#cbTrade').checked   = S.tradein;
+  $('#cbSaved').checked   = S.saved;
+  $$('#railEntry button').forEach(b=>b.classList.toggle('on', b.dataset.v===S.entry));
+  syncRail();
+  $('#framecap').textContent = capFor();
+}
+
+let toastTimer=null, toastShown=false;
+
+function capFor(){
+  const names = {
+    S0:'S0 · standard VDP', S1:'S1 · entry A · question bar', S2:'S2 · entry B · hero toast',
+    S3:'S3 · entry B · toast opened the drawer', S4:'S4 · entry C · price callout', S5:'S5 · dismissed',
+    S6:'S6 · return · answered', S7:'S7 · saved'
+  };
+  if (S.path==='pay')     return 'P1 · What will I pay?' + (S.snap==='peek'?' · peek':' · full');
+  if (S.path==='fit')     return 'P2.'+S.fitStage+' · Does it fit my needs?';
+  if (S.path==='compare') return 'P3.' + S.cmpConcept + S.cmpScreen + ' · ' + (CONCEPTS[S.cmpConcept]||CONCEPTS['1']).label + ' · ' + (CONCEPTS[S.cmpConcept]||CONCEPTS['1']).names[S.cmpScreen-1];
+  if (S.path==='goto')    return 'S10 · persistent nav + price · go to';
+  if (S.path==='decide')  return 'S8 · persistent nav · decide';
+  if (S.path==='jump')    return 'S9 · persistent nav · jump to a section';
+  if (S.viewerOpen) return 'G1b · expanded view';
+  if (S.path==='gallery') return 'G1 · gallery';
+  if (S.path==='features')return 'G2 · key features and installed upgrades';
+  if (S.path==='feature') return 'G3 · feature detail';
+  if (S.path==='location')return 'G4 · location and availability';
+  if (S.path==='testdrive')return 'G'+(5+S.tdStep)+' · test drive · step '+(S.tdStep+1);
+  return names[S.stateId] || S.stateId;
+}
+function setState(id){ S.stateId=id; $('#framecap').textContent = capFor(); }
+
+/* ===========================================================================
+   Sheet plumbing — three snaps, two stacked screens
+   =========================================================================*/
+/* Every guided path opens at full height. Peek was an idea about answering the
+   question before the shopper does any work; in practice a half-open sheet reads
+   as an accident on every one of them, and the inconsistency between paths was
+   worse than the space it saved. Small supporting sheets still open shorter. */
+const SNAP_FOR = {
+  pay:'full',        // opens fully — see the note below
+  fit:'full',        // a conversation you have to read and reply to
+  compare:'full',    // a workspace you have to operate
+  features:'full',
+  gallery:'full',
+  testdrive:'full',
+  feature:'half',
+  location:'peek',
+  decide:'peek',
+  jump:'peek',
+  goto:'half'
+};
+
+/* ------------------------------------------------------------------- hero ---
+   The photo, its counter, and the double-tap that opens it full screen. */
+function paintHero(){
+  const img = $('#heroImg');
+  img.src = heroSrc(S.heroIndex);
+  $('#heroCount').textContent = (S.heroIndex+1) + ' of ' + HERO_TOTAL;
+}
+function heroStep(d){
+  S.heroIndex = Math.max(0, Math.min(HERO_TOTAL-1, S.heroIndex + d));
+  paintHero();
+}
+/* 320ms is the DS prototype's threshold; matching it keeps the gesture feeling
+   the same across the two files. A single tap does nothing, so the photo stays
+   a photo rather than becoming a button. */
+/* Horizontal swipe, on the hero and in the viewer. This is what the arrows were
+   standing in for; now it is the only way through, which is how a phone works.
+   40px threshold, and a horizontal-dominance check so a vertical page scroll that
+   drifts sideways does not change the photo under the shopper's thumb. */
+function swipeable(el, onLeft, onRight){
+  let x0=null, y0=null;
+  el.addEventListener('pointerdown', e=>{ x0=e.clientX; y0=e.clientY; });
+  el.addEventListener('pointerup', e=>{
+    if (x0===null) return;
+    const dx=e.clientX-x0, dy=e.clientY-y0; x0=null;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    (dx < 0 ? onLeft : onRight)();
+  });
+}
+
+let lastHeroTap = 0;
+function heroTap(){
+  const now = Date.now();
+  if (now - lastHeroTap < 320){ lastHeroTap = 0; openViewer('exterior', S.heroIndex + 1, 'hero'); return; }
+  lastHeroTap = now;
+}
+
+/* The last ASCII glyph in the shell. Painted from the icon map so the close
+   control is the same artwork as every other icon in the file. */
+/* Static markup that predates the icon map. Painted here so there is exactly one
+   source of artwork in the file. */
+$('#sxIcon').innerHTML = ICON.close;
+$('#locPin').innerHTML = ICON.pin;
+$$('.gx .ico').forEach(e => e.innerHTML = ICON.close);
+$('.gpath .gpchev').innerHTML = ICON.chevup;
+$$('.copyico').forEach(e => e.innerHTML = ICON.copy);
+$('.cmprow-chev').innerHTML = ICON.chevright;
+$('#gtoast').querySelector('.gtchev').innerHTML = ICON.chevup;
+$('#gtoast').querySelector('.gtx .ico').innerHTML = ICON.close;
+paintHero();
+swipeable($('#hphotos'), ()=>heroStep(1), ()=>heroStep(-1));
+swipeable($('#viewerStage'),
+  ()=>{ if (S.viewerIndex < viewerTotal()-1){ S.viewerIndex++; paintViewer(); } },
+  ()=>{ if (S.viewerIndex > 0){ S.viewerIndex--; paintViewer(); } });
+
+/* The markers are a state of the hero, not a decoration of the sheet. Opening
+   Key Features turns them on and they stay on after the sheet closes — that is
+   the whole point of a hotspot: you close the panel to look at the car. The chip
+   stays lit to say so, and tapping it again turns them off. */
+function setHotspots(on){
+  S.hotspots = !!on;
+  $$('.hero .hhot').forEach(b=>{ b.hidden = !S.hotspots; });
+}
+
+function openSheet(snap){
+  S.snap = snap || 'peek';
+  const sh = $('#sheet');
+  sh.dataset.snap = S.snap;
+  sh.classList.add('show');
+  /* The scrim is on at every stop now, lighter at peek — see the note in the
+     stylesheet. Without it a white sheet sits on a white page. */
+  $('#scrim').classList.add('show');
+  $('#scrim').classList.toggle('peek', S.snap==='peek');
+  pop(true);
+}
+function closeSheet(){
+  $('#sheet').classList.remove('show');
+  $('#scrim').classList.remove('show');
+  S.path = null; S.pushed = false; layers = [];
+  syncRail();
+  $('#stack').classList.remove('pushed');
+  renderShell();
+  setState(S.dismissed ? 'S5' : (chipSummary('pay')||chipSummary('fit')||chipSummary('compare') ? 'S6' : 'S'+({none:'0',A:'1',B:'3',C:'4'}[S.entry]||'1')));
+}
+function snapTo(s){
+  S.snap = s;
+  $('#sheet').dataset.snap = s;
+  $('#scrim').classList.add('show');
+  $('#scrim').classList.toggle('peek', s==='peek');
+  render();
+}
+/* One action, one destination. The handle used to step peek → half → full,
+   which meant two taps (or two drags) to reach the only stop anybody wants.
+   Expanding now goes straight to full from wherever it is; collapsing returns
+   to peek. `half` is still a valid opening height for the small supporting
+   sheets — it is just no longer a stop you have to pass through. */
+function cycleSnap(){
+  snapTo(S.snap === 'full' ? 'peek' : 'full');
+}
+/* A layer can push another layer (protection → a single plan), so the pushed
+   screen keeps its own history rather than being a single slot. */
+let layers = [];
+function push(title, html, foot){
+  layers.push({title, html, foot});
+  paintLayer();
+  $('#stack').classList.add('pushed');
+  S.pushed = true;
+  if (S.snap==='peek') snapTo('full');
+}
+/* One back affordance, driven from one place. Pushed layers use it; so does any
+   screen that is a step down from another (a single key feature, for one). */
+/* The header's optional action. Same idea as setBack(): cleared by default, set
+   by the screens that need it. */
+function setAction(label, act, data){
+  const a = $('#sheetAction');
+  if (!label){ a.hidden = true; return; }
+  a.hidden = false;
+  a.textContent = label;
+  a.dataset.act = act;
+  a.dataset.n = (data && data.n) || '';
+}
+
+function setBack(label, act, data){
+  const b = $('#sback');
+  if (!label){ b.hidden = true; return; }
+  b.hidden = false;
+  b.dataset.act = act || 'pop';
+  b.dataset.p = (data && data.p) || '';
+  b.dataset.n = (data && data.n) || '';
+  b.innerHTML = ico('prev') + '<span>' + label + '</span>';
+}
+
+function paintLayer(){
+  const top = layers[layers.length-1];
+  if (!top) return;
+  setBack('Back to ' + top.title, 'pop');
+  $('#sbody1').innerHTML = top.html;
+  $('#sfoot').hidden = !top.foot;
+  $('#sfoot').innerHTML = top.foot || '';
+  $('#sbody1').scrollTop = 0;
+}
+function pop(silent){
+  layers.pop();
+  if (layers.length){ paintLayer(); return; }
+  $('#stack').classList.remove('pushed');
+  $('#sback').hidden = true;
+  S.pushed = false;
+  if (!silent) render();
+}
+
+/* --------- drag the handle between snaps ---------------------------------- */
+(function dragHandle(){
+  const hit = $('#handlehit'); let y0=null;
+  hit.addEventListener('pointerdown', e=>{ y0=e.clientY; hit.setPointerCapture(e.pointerId); });
+  hit.addEventListener('pointerup', e=>{
+    if (y0===null) return;
+    const dy = e.clientY - y0; y0=null;
+    if (Math.abs(dy) < 16) return;            // treat as a tap → data-act="cycle"
+    /* Drag up goes to full in one gesture — no intermediate stop. Drag down
+       collapses to peek, and a second drag down from peek closes the sheet,
+       which is what a downward flick means on every other mobile surface. */
+    if (dy < 0){ if (S.snap !== 'full') snapTo('full'); }
+    else if (S.snap === 'peek') closeSheet();
+    else snapTo('peek');
+    e.stopPropagation();
+  });
+})();
+
+/* ===========================================================================
+   Path rendering
+   =========================================================================*/
+function render(){
+  if (!S.path) return;
+  /* The gallery is the only body that manages its own scrolling region, so the
+     padded default is dropped for it and restored for everything else. */
+  $('#sbody0').classList.toggle('flush', S.path === 'gallery' || S.path === 'compare');
+  /* Cleared by default; the screens that are a step down set it themselves. */
+  if (!S.pushed && S.path !== 'feature') setBack(null);
+  setAction(null);
+  const r = ({pay:renderPay, fit:renderFit, compare:renderCompare,
+              gallery:renderGallery, feature:renderFeature, features:renderFeatures,
+              decide:renderDecide, jump:renderJump, goto:renderGoTo,
+              location:renderLocation, testdrive:renderTestDrive})[S.path];
+  if (r) r();
+  syncRail();
+  $('#framecap').textContent = capFor();
+}
+
+/* The pinned figure is gone. Repeating the total beside the close control was an
+   idea about keeping the number in view while the shopper moves between layers;
+   in practice it competes with the number the body is already leading with, and
+   it put a price next to a dismiss button. The third argument is accepted and
+   ignored so the call sites can stay as they read. */
+function head(title, sub, _fig){
+  $('#sheetTitle').textContent = title;
+  $('#sheetSub').textContent = sub || '';
+}
+function bumpFig(){ /* no pinned figure to bump any more */ }
+
+/* --------------------------------------------------- P1 · What will I pay? */
+function renderPay(){
+  const expanded = S.snap !== 'peek';
+  const qualified = S.prequal;
+  /* The pinned figure tracks whatever the shopper is looking at, so the header
+     and the ledger never disagree: total price at peek, estimated total once the
+     taxes and fees are on screen, and the monthly once terms are known. */
+  /* No pinned figure at peek — the body is already showing the number at full
+     size, and printing it twice in one 45%-tall sheet reads as a mistake. */
+  /* The pinned figure is the same number the body leads with — printing the
+     total price in the body and the estimated total cost in the header made the
+     sheet look like it disagreed with itself. */
+  head('What will I pay?', 'Review the cost, then choose what you want to do next.',
+       qualified ? money(monthly())+'/mo' : money(N.totalPrice));
+
+  /* Protection is a monthly amount and the ledger above it is a cash total.
+     Mixing them in one column made the desktop drawer hard to read, so the
+     selected plans sit below the cash total as their own monthly block. */
+  const planRows = Object.keys(PLANS).filter(k=>S.plans[k])
+    .map(k=>`<div class="lrow plan"><span>${PLANS[k].name}</span><span>+${money(PLANS[k].mo)}/mo</span></div>`).join('');
+  const planBlock = planRows ? `
+    <div class="ledger monthlyblock">
+      <p class="eyebrow" style="margin:14px 0 2px">Protection selected</p>
+      ${planRows}
+      <div class="lrow total"><span>Added to your monthly</span><b>+${money(planMonthly())}/mo</b></div>
+    </div>` : '';
+
+  /* Peek leads with the answer, not the ledger. An itemised list at 45% height
+     gets clipped exactly where the total should be — which is the one number
+     the peek exists to deliver. The components are stated in a sentence instead. */
+  const peekBody = `
+    <div class="peekfig">
+      <b>${qualified ? money(monthly())+'/mo' : money(N.totalPrice)}</b>
+      <span>${qualified ? `${N.months} months · ${(N.apr*100).toFixed(1)}% APR (est.)` : 'Total price'}</span>
+    </div>
+    <p class="fine" style="margin-top:8px">Vehicle price ${money(N.vehicle)}, less a ${money(N.reduction)} price drop,
+      plus a ${money(N.doc)} document fee. Taxes and registration are not included yet.</p>`;
+
+  const fullLedger = `
+    <div class="ledger">
+      <div class="lrow"><span>Vehicle price</span><span>${money(N.vehicle)}</span></div>
+      <div class="lrow drop"><span><i class="dropmark">${ICON.pricedrop}</i>Price drop</span><span>−${money(N.reduction)}</span></div>
+      <div class="lrow"><span>Estimated taxes<span class="est">est.</span></span><span>${money(N.taxes)}</span></div>
+      <div class="lrow"><span>Tag, title and other fees<span class="est">est.</span></span><span>${money(N.tagTitle)}</span></div>
+      <div class="lrow"><span>Document fee</span><span>${money(N.doc)}</span></div>
+      <div class="lrow total"><span>${qualified?'Total cash price':'Estimated total cost'}</span><b>${money(N.totalCost)}</b></div>
+      ${qualified ? `
+        <div class="lrow"><span>Cash down payment</span><span>−${money(N.down)}</span></div>
+        ${S.tradein ? `<div class="lrow sub"><span>Trade-in value</span><span>−${money(N.tradeValue)}</span></div>
+                       <div class="lrow"><span>Trade payoff</span><span>+${money(N.tradePayoff)}</span></div>` : ''}
+        <div class="lrow total"><span>Estimated loan total</span><b>${money(financed())}</b></div>`
+      : `<div class="lrow"><span>Down payment and trade</span><span style="color:var(--muted)">Not added</span></div>
+         <div class="lrow total"><span>Estimated amount to finance</span><b>${money(financed())}</b></div>`}
+    </div>`;
+
+  const protection = `
+    <h3 class="sh3" style="margin-top:22px">Recommended protection plans</h3>
+    <p class="slede">Compare optional coverage now and decide when you buy.</p>
+    ${Object.keys(PLANS).map(k=>`
+      <div class="planrow">
+        <div class="pinfo">
+          <button class="pname" data-act="plan-detail" data-k="${k}">${PLANS[k].name}</button>
+          <div class="pmeta">From +${money(PLANS[k].mo)}/mo</div>
+        </div>
+        <button class="radio" data-act="plan-toggle" data-k="${k}" role="checkbox" aria-checked="${!!S.plans[k]}" aria-label="${PLANS[k].name}"><span class="tick">${ICON.check}</span></button>
+      </div>`).join('')}
+    <div class="askbox">
+      <h4>Questions about coverage?</h4>
+      <div class="askchips">
+        <button data-act="stub" data-msg="Echo would answer this in the panel">What isn't covered?</button>
+        <button data-act="stub" data-msg="Echo would answer this in the panel">When would I use this?</button>
+        <button data-act="stub" data-msg="Echo would answer this in the panel">Which plan saves me most?</button>
+      </div>
+    </div>`;
+
+  const terms = `
+    <h3 class="sh3" style="margin-top:22px">Your terms and trade-in</h3>
+    ${qualified ? `
+      <div class="result">
+        <div class="rlabel">Your terms</div>
+        <div class="rbig">${money(monthly())}/mo · ${N.months} months</div>
+        <div class="rmeta">${(N.apr*100).toFixed(1)}% APR (est.)${planMonthly()?` · includes ${money(planMonthly())}/mo protection`:''}</div>
+        <a data-act="stub" data-msg="Review your terms">Review your terms</a>
+      </div>`
+    : `<div class="result">
+        <div class="rlabel">Get prequalified</div>
+        <p class="ticked" style="margin-top:6px">${ico('check','tick')}<span>No impact to your credit score</span></p>
+        <div class="rmeta">Takes about 4–6 minutes. Check terms and monthly payment confidence without leaving the vehicle page.</div>
+        <a data-act="prequal">Get prequalified</a>
+      </div>`}
+    ${S.tradein ? `
+      <div class="result">
+        <div class="rlabel">Your trade-in</div>
+        <div class="rbig">2018 Honda CR-V EX</div>
+        <div class="rmeta">Estimated trade-in value: ${money(N.tradeValue)}</div>
+        <a data-act="stub" data-msg="Review your trade-in">Review your trade-in</a>
+      </div>`
+    : `<div class="result">
+        <div class="rlabel">Trade-in</div>
+        <div class="rmeta" style="margin-top:6px">Tell us about it to see an estimated value and how it may affect this vehicle's cost.</div>
+        <a data-act="trade">Add a trade-in</a>
+      </div>`}`;
+
+  /* Two shapes, same content — switchable in the dev rail so the team can feel the
+     difference rather than read about it.
+       scroll  the literal desktop translation: everything in one sheet (2.2 screens)
+       layers  answer first, then three doors, each of which stays under one screen */
+  PAY_LAYERS.breakdown = {title:"what I'll pay", html:
+      `<h3 class="sh3">${qualified?'Your cost':'Estimated cost'}</h3>
+       <p class="slede">Everything that makes up the price of this car.</p>
+       ${fullLedger}
+       <p class="fine">Estimate only. Taxes and registration vary by location.</p>`};
+  PAY_LAYERS.protection = {title:"what I'll pay", html: planBlock + protection};
+  PAY_LAYERS.terms      = {title:"what I'll pay", html: terms};
+
+  const doors = `
+      <div class="steps">
+        <button class="step" data-act="pay-door" data-d="breakdown"><span>See the full breakdown<span class="meta">Taxes, fees, and what you would finance</span></span><span class="chev">\u203a</span></button>
+        <button class="step" data-act="pay-door" data-d="protection"><span>${planMonthly()?'Change protection':'Add protection'}<span class="meta">${planMonthly()? money(planMonthly())+'/mo selected' : 'Three optional plans, from +'+money(PLANS.gap.mo)+'/mo'}</span></span><span class="chev">\u203a</span></button>
+        <button class="step" data-act="pay-door" data-d="terms"><span>${qualified?'Your terms and trade-in':'Get prequalified'}<span class="meta">${qualified? money(monthly())+'/mo \u00b7 '+N.months+' months' : 'No impact to your credit score'}</span></span><span class="chev">\u203a</span></button>
+      </div>`;
+
+  const longform = `
+    <h3 class="sh3" style="margin-top:10px">${qualified?'Your cost':'Estimated cost'}</h3>
+    ${fullLedger}
+    <p class="fine">Estimate only. Taxes and registration vary by location.</p>
+    ${planBlock}${protection}${terms}<div style="height:8px"></div>`;
+
+  const useLayers = S.payMode === 'layers';
+  $('#sbody0').innerHTML = `
+    <span class="flag">${qualified?'Your cost':'Before qualification'}</span>
+    ${(!useLayers && expanded) ? longform : peekBody + doors}`;
+
+  $('#sfoot').hidden = false;
+  $('#sfoot').innerHTML = `<button class="btn primary block" data-act="stub" data-msg="Hands off to the existing Buying options flow — see handoff §12.2">Continue to the buying process</button>`;
+}
+
+/* A selection made inside a pushed layer repaints that layer rather than
+   dropping the shopper back a level. */
+function paintPlanLayer(){
+  if (!S.payDoor || !layers.length) { pop(); return; }
+  renderPay();
+  const L = PAY_LAYERS[S.payDoor];
+  if (!L) { pop(); return; }
+  layers[layers.length-1] = {title:L.title, html:L.html, foot:layers[layers.length-1].foot};
+  paintLayer();
+}
+
+function planDetail(k){
+  const p = PLANS[k];
+  const body = `
+    <p class="eyebrow">Recommended protection plans</p>
+    <h3 class="sh3">${p.name}</h3>
+    <p class="slede">Choose coverage and a deductible that fit your plans. Final availability and pricing depend on the vehicle and selected terms.</p>
+    <div class="panelsoft">
+      <p class="eyebrow" style="margin-bottom:4px">Why shoppers consider it</p>
+      <div style="font-size:15px;margin-bottom:4px">Common repairs can cost thousands without coverage.</div>
+      <div class="statgrid">
+        <div><b>$8,784</b><span>Engine</span></div>
+        <div><b>$2,740</b><span>Electrical</span></div>
+        <div><b>$2,194</b><span>Braking systems</span></div>
+      </div>
+    </div>
+    <h4 class="sh3" style="font-size:15px">What the plan can include</h4>
+    <ul class="bullets">
+      <li>Core systems including engine, transmission, electrical, heating and cooling</li>
+      <li>Your preferred authorized repair facility nationwide</li>
+      <li>Direct payment for covered repairs</li>
+      <li>Alternate transportation, towing, travel, and diagnostic benefits</li>
+    </ul>
+    <div class="twoup">
+      <div><label>Deductible</label><span>Options as low as $100</span></div>
+      <div><label>Payment</label><span>May be included with financing</span></div>
+    </div>
+    <p class="fine"><a style="color:var(--blue);text-decoration:underline" data-act="stub" data-msg="Terms and exclusions">See complete terms and exclusions</a></p>`;
+  const foot = `<div style="display:flex;gap:10px">
+      <button class="btn ghost" data-act="plan-toggle" data-k="${k}">${S.plans[k]?'Remove':'Add'} for +${money(p.mo)}/mo</button>
+      <button class="btn primary" data-act="stub" data-msg="Echo would open here with protection context">Ask about protection</button>
+    </div>`;
+  push(S.payDoor==='protection' ? 'protection' : "what I'll pay", body, foot);
+}
+
+/* ------------------------------------------------ P2 · Does it fit my needs? */
+/* Built to Figma 1:3201 — the four mobile-width "Chat with Echo" states
+   (1:3202 default, 1:3254 pill picked, 1:3316 Echo asks, 1:3368 question typed).
+   These were already drawn at 375, so this is a port, not a reinterpretation. */
+function renderFit(){
+  $('#sheetTitle').innerHTML = '<span class="echomark"></span>Chat with Echo';
+  $('#sheetSub').innerHTML = S.fitStage
+    ? '<button class="sback" style="padding:0" data-act="fit-restart">Start over</button>'
+    : '';
+
+  const intro = `
+    <p class="eyebrow">What would help you decide?</p>
+    <h3 class="sh3" style="font-size:22px;margin-bottom:6px">Does it fit my needs?</h3>
+    <p class="slede">Explore the details that matter to you, or search for something specific.</p>
+    <div class="pills stacked">
+      <button data-act="fit-pill">Is there enough room for my family?</button>
+      <button data-act="fit-pill">What features come with this trim?</button>
+      <button data-act="fit-pill">Can I see the interior and cargo space?</button>
+      <button data-act="fit-pill">What does the vehicle history show?</button>
+    </div>
+    <div class="example">
+      <p class="eyebrow" style="margin-bottom:6px">Example request</p>
+      <i>&ldquo;Would this work for two kids and weekend trips?&rdquo;</i>
+      <span>Echo would return a small group of vehicles and explain why each one may be useful to compare.</span>
+    </div>`;
+
+  const answer1 = `
+    <div class="qbubble">Is there enough room for my family?</div>
+    <p class="eyebrow">Vehicle fit · Passenger space</p>
+    <div class="quickcard">
+      <p class="eyebrow" style="margin-bottom:6px">Quick answer</p>
+      <div class="qabig">This Tiguan seats five across two rows</div>
+      <p>Rear seating and flexible second-row access make it suitable for everyday
+         passengers, child seats, and weekend travel.</p>
+      <div class="qadiv"></div>
+      <p class="eyebrow" style="margin-bottom:2px">Passenger capacity</p>
+      <div class="qabig">5 seats</div>
+    </div>
+    <div class="statrows">
+      <div><label>Seating layout</label><span>Two rows</span></div>
+      <div><label>Rear comfort</label><span>Climate controls</span></div>
+      <div><label>Access</label><span>Four side doors</span></div>
+    </div>`;
+
+  const askBack = `
+    <p class="turnnote">That answers the seats. It doesn&rsquo;t answer whether <b>this</b> is the right one for you.</p>
+    <h3 class="sh3" style="font-size:20px">Who&rsquo;s usually in the car with you?</h3>
+    <p class="slede">The normal week, not the once-a-year trip. Two questions and I&rsquo;ll tell you where this Tiguan lands.</p>
+    <div class="pills stacked narrow">
+      <button data-act="fit-who">Just me</button>
+      <button data-act="fit-who">Two of us</button>
+      <button data-act="fit-who">Three or four</button>
+      <button data-act="fit-who">Five or more</button>
+    </div>`;
+
+  const typed = `
+    <div class="qbubble">Would this work for two kids and weekend trips?</div>
+    <div class="usingbox">Using: <b>three or four of us</b> · <b>strollers and gear</b> ·
+      <button data-act="fit-restart">Change these</button></div>
+    <p class="fitanswer">Yes, with room to spare &mdash; and two others in stock do it slightly better.</p>
+    <div class="fitcard current">
+      <p class="eyebrow">The one you&rsquo;re looking at</p>
+      <p class="fcmeta">2024 · 34K mi · $27,222</p>
+      <div class="fcname">VW Tiguan SE R-Line</div>
+      <p class="fcnote">${ico('check','tick')}<span>Two car seats fit easily. 37.6 cu ft behind row two.</span></p>
+    </div>
+    <div class="fitcard">
+      <p class="eyebrow">More room</p>
+      <p class="fcmeta">2023 · 28K mi · $27,998</p>
+      <div class="fcname">Honda CR-V EX</div>
+      <p class="fcnote">${ico('check','tick')}<span>39.3 cu ft &mdash; about a stroller more than the Tiguan.</span></p>
+    </div>
+    <div class="fitcard">
+      <p class="eyebrow">More capability</p>
+      <p class="fcmeta">2024 · 22K mi · $29,240</p>
+      <div class="fcname">Subaru Forester Premium</div>
+      <p class="fcnote">${ico('check','tick')}<span>All-wheel drive, 74.2 cu ft with the seats down &mdash; $18 a month more.</span></p>
+    </div>
+    <div class="turn">
+      <h3 class="sh3" style="font-size:18px">Could this be the right car?</h3>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn ghost" data-act="path" data-p="compare">Compare these</button>
+        <button class="btn primary" data-act="testdrive">Test Drive</button>
+      </div>
+    </div>`;
+
+  /* A transcript grows without limit — measured at 2.58 screens by the fourth
+     turn, with the original answer two screens back. Earlier turns collapse to a
+     one-line summary the shopper can reopen, so the conversation stays about a
+     screen however long it runs. The chat model is intact; only the history is
+     folded. */
+  const folded = (label, answer, stage) => `
+    <button class="foldrow" data-act="fit-open" data-s="${stage}">
+      <span class="fq">${label}</span><span class="fa">${answer}</span><span class="chev">⌄</span>
+    </button>`;
+
+  const openStage = S.fitOpen == null ? S.fitStage : S.fitOpen;
+  let body;
+  if (S.fitStage === 0)       body = intro;
+  else if (S.fitStage === 1)  body = answer1;
+  else if (S.fitStage === 2)  body = (openStage===1 ? answer1 : folded('Room for my family?','Seats five across two rows',1)) + askBack;
+  else                        body = (openStage===1 ? answer1 : folded('Room for my family?','Seats five across two rows',1))
+                                   + (openStage===2 ? askBack : folded("Who's usually in the car?",'Three or four of us',2))
+                                   + typed;
+  $('#sbody0').innerHTML = body;
+
+  if (S.fitStage>=1) $('#sbody0').scrollTop = $('#sbody0').scrollHeight;
+
+  $('#sfoot').hidden = false;
+  $('#sfoot').innerHTML = `
+    <div class="composer">
+      <input id="fitInput" type="text" aria-label="Ask Echo"
+        placeholder="${S.fitStage ? 'Ask a follow-up, or describe what you need' : 'Ask what is different, or describe what you need'}">
+      <button class="send" data-act="fit-send" aria-label="Send">↑</button>
+    </div>`;
+}
+
+/* ---------------------------------------------- P3 · How does it compare? */
+/* ===========================================================================
+   P3 · How does it compare?  —  three concepts
+   ---------------------------------------------------------------------------
+   Ported from car-comparison-mobile-concepts/. A is the control: the desktop
+   modal translated straight down, no AI. B and C are the mobile form of desktop
+   Concepts 1 and 2. Copy, vehicle data and the comparison table are carried over
+   verbatim so the room compares form, not wording.
+
+   The module drew its own top bar and its own footer; here the sheet supplies
+   both, so `topbar()` is dropped and `footer()` writes into #sfoot.
+   ========================================================================= */
+const M = {};   // the module's render helpers
+
+M.card = (name, meta, price, opts={}) => {
+  const rank = opts.rank ? `<p class="m-card-rank">${opts.rank}</p>` : '';
+  const add = opts.selected
+    ? `<button class="m-card-add m-card-add-on">${ICON.check} Selected</button>`
+    : `<button class="m-card-add">Add to compare</button>`;
+  return `<div class="m-card"><div class="m-card-pic">${rank}
+    <button class="m-card-heart">${ICON.heart}</button>${add}</div>
+    <div class="m-card-meta"><p class="m-card-title">${name}</p>
+    <p class="m-card-sub">${meta}</p><p class="m-card-price">${price}</p></div></div>`;
+};
+M.selstrip = items => `<div class="m-selstrip">${items.map(v=>`
+  <div class="m-selchip"><div class="m-selchip-thumb">
+    <button class="m-selchip-remove">${ICON.close}</button></div>
+    <p class="m-selchip-meta">${v[1]}</p><p class="m-selchip-name">${v[0]}</p></div>`).join('')}</div>`;
+M.chips = items => `<div class="m-chips">${items.map(c=>
+  `<button class="m-chip${c[1]?' m-chip-active':''}">${c[0]}</button>`).join('')}</div>`;
+M.askInput = copy => `<div class="m-input"><p class="m-input-copy">${copy}</p>
+  <div class="m-input-tools"><button class="m-input-btn">${ICON.mic}</button>
+  <button class="m-input-btn m-input-btn-dark">${ICON.search}</button></div></div>`;
+M.dock = (title, inputCopy, msgs, chipItems) => {
+  const thread = msgs.map(m => m[0]==='you'
+    ? `<div class="m-msg m-msg-user"><p class="m-msg-label">You</p><div class="m-bubble m-bubble-user">${m[1]}</div></div>`
+    : `<div class="m-msg"><p class="m-msg-label">Echo</p><div class="m-bubble">${m[1]}</div></div>`).join('');
+  return `<div class="m-dock"><div class="m-dock-top"><p class="m-ask-label">${title}</p>
+    <button class="m-textbtn">Clear</button></div>
+    ${inputCopy ? M.askInput(inputCopy) : ''}
+    <div class="m-thread">${thread}</div>${M.chips(chipItems)}</div>`;
+};
+M.scroll = inner => `<div class="m-scroll">${inner}</div>`;
+M.list   = cards => `<div class="m-list">${cards.join('')}</div>`;
+M.head   = (title, note) => `<div class="m-resulthead"><p class="m-resulttitle">${title}</p>
+  ${note ? `<p class="m-note">${note}</p>` : ''}</div>`;
+M.current = `<div class="m-current"><div class="m-current-thumb"></div><div class="m-current-copy">
+  <div class="m-badge"><p class="m-badge-label">Currently Viewing</p></div>
+  <p class="m-current-meta">2024 &middot; 34K MILES</p>
+  <div class="m-current-nameblock"><p class="m-current-name">Volkswagen Tiguan</p>
+  <p class="m-current-name">SE R-Line Black</p></div></div></div>`;
+M.ask = chipItems => `<div class="m-ask"><p class="m-ask-label">Compare with help from Echo</p>
+  <p class="m-ask-q">What matters most in your next car?</p>
+  ${M.askInput('I need room for two kids and road-trip luggage under $30K')}
+  ${M.chips(chipItems)}</div>`;
+
+const CMP_ROWS = ['Echo’s take','Price','Mileage','Passenger space','Fuel economy','Key tradeoff'];
+const CMP_VEHICLES = [
+  {name:'2024 Volkswagen Tiguan SE R-Line', meta:'34K mi &middot; $29,997', current:true,
+   values:['Most features','$29,997','34K mi','5 seats','22 / 29 mpg','Higher price']},
+  {name:'2022 Volkswagen Tiguan S', meta:'42K mi &middot; $24,997', winner:true,
+   values:['Best overall fit','$24,997','42K mi','7 seats','23 / 30 mpg','Less cargo room']},
+  {name:'2023 Honda CR-V Sport', meta:'31K mi &middot; $28,441',
+   values:['Best efficiency','$28,441','31K mi','5 seats','28 / 34 mpg','No third row']}
+];
+
+/* Concept A has no Echo, so its table carries no "Echo's take" row and no
+   AI-picked winner emphasis. That is deliberate, and it is the sharpest argument
+   for the AI concepts: they do not merely add a chat surface, they add a row of
+   judgement and pre-pick a winner. */
+function comparisonGrid(withEcho){
+  const rows = withEcho ? CMP_ROWS : CMP_ROWS.slice(1);
+  const labels = `<div class="m-cmp-labels"><div class="m-cmp-label m-cmp-label-head">Vehicle</div>
+    ${rows.map(r=>`<div class="m-cmp-label">${r}</div>`).join('')}</div>`;
+  const track = `<div class="m-cmp-track">${CMP_VEHICLES.map(v=>{
+    const values = withEcho ? v.values : v.values.slice(1);
+    return `<div class="m-cmp-col"><div class="m-cmp-head">
+      ${v.current ? '<p class="m-cmp-badge">Currently Viewing</p>' : ''}
+      <div class="m-cmp-thumb"></div><p class="m-cmp-name">${v.name}</p>
+      <p class="m-cmp-vmeta">${v.meta}</p></div>
+      ${values.map((val,i)=>`<div class="m-cmp-value${withEcho && v.winner && i<4 ? ' m-cmp-value-strong':''}">${val}</div>`).join('')}</div>`;
+  }).join('')}</div>`;
+  return `<div class="m-cmp-shell">${labels}${track}</div>`;
+}
+
+function resultsBody(withEcho, withDock){
+  /* Heading dropped — the sheet header carries it. Only the action survives. */
+  const body = `<div class="m-cmp-top"><div class="m-cmp-heading"></div>
+    <button class="m-cmp-edit" data-act="cmp-screen" data-n="3">Edit selections</button></div>
+    <div class="m-cmp-hint"><span>Swipe the columns to see all three</span>${ico('chevright')}</div>
+    ${comparisonGrid(withEcho)}
+    <p class="m-cmp-note">Comparison uses EchoPark listing details. Verify vehicle-specific features on the vehicle detail page.</p>`;
+  const tail = withDock
+    ? M.dock('Ask Echo','Which one is the best overall fit?',
+        [['echo','<b>The 2022 Tiguan S is the strongest overall fit</b> for your stated priorities: the lowest price and seven seats.']],
+        [['Explain the tradeoffs',false],['Compare payments',false],['Which has more cargo room?',false]])
+    : '';
+  return {body: M.scroll(body) + tail,
+          foot: withDock ? '' : `<button class="btn primary block" data-act="stub" data-msg="Opens the comparison page with these vehicles carried forward — out of scope this round">${withEcho?'Continue with 2022 Tiguan S':'Done comparing'}</button>`};
+}
+
+/* The four saved vehicles, defined once. Every screen that says "4 saved" now
+   renders four; the module shipped two per frame as a frame-count-over-density
+   call, which reads as a bug when the count beside it says four.
+   Data is the handoff's table verbatim. Estimated payments exist in the source
+   for three of the four — the Outback has none, so the ranked screen ranks the
+   three that have one and leaves the Outback with its plain meta rather than
+   inventing a figure for it. */
+const FAVS = {
+  tiguan:  {name:'2022 Volkswagen Tiguan S', meta:'7 seats &middot; 42K mi',        pay:'Est. $396/mo &middot; 42K mi', price:'$24,997'},
+  crv:     {name:'2023 Honda CR-V Sport',    meta:'31K mi &middot; 28/34 mpg',      pay:'Est. $451/mo &middot; 31K mi', price:'$28,441'},
+  sorento: {name:'2023 Kia Sorento LX',      meta:'7 seats &middot; 36K mi',        pay:'Est. $442/mo &middot; 36K mi', price:'$27,890'},
+  outback: {name:'2021 Subaru Outback',      meta:'5 seats &middot; 47K mi',        pay:null,                            price:'$25,930'}
+};
+const fav = (k, opts={}) => M.card(FAVS[k].name,
+  (opts.payment && FAVS[k].pay) ? FAVS[k].pay : FAVS[k].meta, FAVS[k].price, opts);
+
+const SEL_AB = [['Volkswagen Tiguan S','2022 &middot; 42K MI'],['Honda CR-V Sport','2023 &middot; 31K MI']];
+const SEL_B  = [['Volkswagen Tiguan S','2022 &middot; 42K MI'],['Kia Sorento LX','2023 &middot; 36K MI']];
+
+/* ===========================================================================
+   Two flows, from Figma 60:38334 — "Car Comparison · Conversational AI Concepts"
+   ---------------------------------------------------------------------------
+   The board carries two concepts, not three, and the earlier no-AI control is
+   not one of them. Both deltas are explicit about what changed and why, and
+   three of their notes are decisions this build had wrong:
+
+     · "The earlier concept combined selection help and comparison actions, which
+       made the first step feel busier than it needed to." — so the source tabs,
+       the empty-state steps and the selection strip no longer share screen one.
+       Each step gets room: ask a question, narrow the results, choose vehicles,
+       then compare them.
+     · "The current vehicle stays visible throughout." — it is pinned in flow 1,
+       not just printed on the first screen.
+     · "Limiting the comparison to five vehicles keeps it easier to scan" —
+       the cap is the current vehicle plus four added, so counts read "n of 4
+       added" against a five-car comparison, not "n OF 4".
+
+   And the note that settles the button rule, in the board's own words: "test
+   whether ... the Compare cars button should appear after two vehicles are
+   selected." It appears. It is never rendered inactive.
+
+   Structure comes from the board; shapes, type and colour stay this
+   prototype's — Louis's instruction, and the reason nothing below sets a font.
+   ========================================================================= */
+const CONCEPTS = {
+
+  /* ------------------------------------------------- 1 · Ask Echo search ---
+     Figma "Concept 1 · Ask Echo favorites search", frames A1-A4. */
+  1:{label:'1 · Ask Echo search', names:['Ask','Narrowed','Chosen','Compare'],
+     title:'Car Comparison',
+     render(n){
+       if (n===4) return resultsBody(true,false);
+
+       /* The current vehicle is pinned above the scrolling results rather than
+          scrolling away with them — "stays visible throughout". */
+       if (n===1) return {pinned: M.current, body: M.scroll(
+         `${M.ask([['Lowest payment',false],['Most passenger room',false],['Best for road trips',false]])}
+          ${M.head('Your favorites','4 saved')}
+          ${M.list(['tiguan','crv','sorento','outback'].map(k=>fav(k)))}`),
+         foot:''};
+
+       if (n===2) return {pinned: M.current, body: M.scroll(
+         `${M.ask([['Lowest payment',true],['Most passenger room',false],['Best for road trips',false]])}
+          <p class="m-note">Favorites reordered by estimated payment. Taxes, fees, financing terms, and down payment can change the estimate.</p>
+          ${M.head('Lowest-payment favorites','4 saved')}
+          ${M.list([fav('tiguan',{payment:true,rank:'LOWEST PAYMENT'}),
+                    fav('sorento',{payment:true,rank:'NEXT LOWEST'}),
+                    fav('crv',{payment:true}),
+                    fav('outback')])}`),
+         foot:''};
+
+       /* Two chosen — the comparison is now worth running, so the action exists. */
+       return {pinned: M.current, body: M.scroll(
+         `<p class="m-selcount">2 of 4 added &middot; compares 3 cars with this one</p>
+          ${M.selstrip(SEL_B)}
+          ${M.head('Lowest-payment favorites','4 saved')}
+          ${M.list([fav('tiguan',{payment:true,rank:'LOWEST PAYMENT',selected:true}),
+                    fav('sorento',{payment:true,rank:'NEXT LOWEST',selected:true}),
+                    fav('crv',{payment:true}),
+                    fav('outback')])}`),
+         foot:`<button class="btn primary block" data-act="cmp-screen" data-n="4">Compare cars</button>`};
+     }},
+
+  /* -------------------------------------------- 2 · Ask Echo side panel ---
+     Figma "Concept 2 · Ask Echo comparison copilot", frames B1-B4. The desktop
+     right-hand panel becomes the docked thread on a phone: the conversation
+     stays put, the cards move. The board asks us to confirm shoppers can clear a
+     filtered view and get back to all favorites, so "Clear filter" is a real
+     control on every filtered screen. */
+  2:{label:'2 · Ask Echo side panel', names:['Echo opens','Filtered','Chosen','Compare'],
+     title:'Car Comparison',
+     render(n){
+       if (n===4) return resultsBody(true,true);
+
+       if (n===1) return {body: M.scroll(
+         `${M.head('Your favorites','4 saved')}
+          ${M.list(['tiguan','crv','sorento','outback'].map(k=>fav(k)))}`)
+         + M.dock('Ask Echo','',
+             [['echo','I can help narrow your favorites. What would you like to prioritize?']],
+             [['Best for a family road trip',false],['Lowest payment',false],['Most passenger room',false]]),
+         foot:''};
+
+       if (n===2) return {body: M.scroll(
+         `<div class="m-filter"><p class="m-filter-copy">Filtered for family road trips</p>
+          <button class="m-textbtn" data-act="cmp-screen" data-n="1">Clear filter</button></div>
+          ${M.head('Recommended favorites','3 of 4 match')}
+          ${M.list([fav('tiguan',{rank:'BEST MATCH'}),
+                    fav('sorento',{rank:'NEXT BEST'}),
+                    fav('crv')])}`)
+         + M.dock('Ask Echo','',
+             [['you','Which is best for a family road trip?'],
+              ['echo','<b>The 2022 Tiguan S is the strongest starting point.</b> It offers seven seats and the lowest listed price.']],
+             [['Prioritize cargo room',false],['Show the tradeoffs',false]]),
+         foot:''};
+
+       return {body: M.scroll(
+         `<div class="m-filter"><p class="m-filter-copy">Refined for road trips + cargo room</p>
+          <button class="m-textbtn" data-act="cmp-screen" data-n="1">Clear filter</button></div>
+          <p class="m-selcount">2 of 4 added &middot; compares 3 cars with this one</p>
+          ${M.selstrip(SEL_AB)}
+          ${M.head('Recommended favorites','3 of 4 match')}
+          ${M.list([fav('crv',{rank:'BEST MATCH',selected:true}),
+                    fav('outback',{rank:'MORE CARGO',selected:true}),
+                    fav('tiguan')])}`)
+         + M.dock('Ask Echo','',
+             [['you','Prioritize cargo room, too.'],
+              ['echo','<b>The Honda CR-V moves to the top.</b> It gives up a third row, but offers the strongest mix of cargo space and fuel economy for long trips.']],
+             [['Compare monthly payments',false],['Why not the Sorento?',false]]),
+         /* Concept 2's dock owns the bottom, so Compare lives in the header —
+            and it appears here for the same reason it does in flow 1. */
+         foot:''};
+     }}
+};
+
+
+/* One entry, three concepts. The old single-concept body is replaced rather than
+   kept alongside — Louis asked for one polished prototype, not two comparison
+   flows in the same file. The picker, preview and remove-confirm machinery that
+   the old body used — `carCard`, `carPreview`, `cmp-add`, `cmp-preview`,
+   `cmp-remove`, the remove-confirmation dialog and the `cmpSource` switcher — is
+   deleted rather than left dormant. Dead code in a review file is a liability:
+   it is what a stakeholder finds when something misroutes. */
+function renderCompare(){
+  const c = CONCEPTS[S.cmpConcept] || CONCEPTS['1'];
+  const n = Math.min(Math.max(S.cmpScreen,1),4);
+  const out = c.render(n);
+
+  head(n===4 ? 'Compare cars' : c.title,
+       n===4 ? 'This car and two you added · up to four'
+             : (S.cmpConcept==='A' && n===1 ? 'Select vehicles to compare side by side and find the right fit.' : ''));
+  /* Screen 4 is a step down from the picker, so it takes the back affordance —
+     the same one the pushed layers and the key-feature screen use. */
+  setBack(n===4 ? 'Back to comparison' : null, 'cmp-screen', {n:3});
+
+  /* Concept C's Echo dock owns the bottom of the screen, so C had no Compare
+     affordance at all on screens 1-3 — the results table was reachable only from
+     the controls panel, which is not a flow anyone can walk. This is the second
+     of the two options the comparison handoff named ("Compare moves into the top
+     bar"), implemented literally rather than inventing a third. It appears from
+     screen 2, once there is something to compare. The alternative — collapsing
+     the thread to one line once two cars are selected — is still open. */
+  /* "Test whether the Compare cars button should appear after two vehicles are
+     selected" — it appears, and only then. Flow 2's Echo dock owns the bottom of
+     the screen, so its Compare sits in the header; flow 1 puts it in the footer
+     where the thumb is. Neither is ever rendered inactive. */
+  if (S.cmpConcept === '2' && n === 3) setAction('Compare cars', 'cmp-screen', {n:4});
+
+  $('#sbody0').classList.add('flush');
+  /* A pinned region above the scroller — flow 1 keeps the current vehicle there,
+     because the board says it "stays visible throughout". */
+  $('#sbody0').innerHTML = (out.pinned ? `<div class="m-pinned">${out.pinned}</div>` : '') + out.body;
+  $('#sfoot').hidden = !out.foot;
+  $('#sfoot').innerHTML = out.foot || '';
+}
+
+
+
+/* ------------------------------------------------------ supporting states */
+/* The persistent nav's two sheets. Both open at peek and are one screen. */
+function renderDecide(){
+  head('What would help you decide?', 'Start with the question that matters most.', '');
+  $('#sbody0').innerHTML = `
+    <div class="steps" style="margin-top:0;border-top:0">
+      ${QUESTIONS.map(q=>{const s=chipSummary(q.id);return `
+        <button class="step" data-act="path" data-p="${q.id}">
+          <span>${q.label}${s?`<span class="meta">${s}</span>`:''}</span><span class="chev">${ICON.arrow}</span></button>`;}).join('')}
+      <button class="step" data-act="path" data-p="fit">
+        <span>Ask Echo<span class="meta">Tell Echo what matters to you</span></span><span class="chev">${ICON.arrow}</span></button>
+    </div>`;
+  $('#sfoot').hidden = true;
+}
+
+/* The planned below-the-fold sections. They are listed so the routing pattern can
+   be judged, but none of them is designed yet, so every one lands on the single
+   in-progress notice rather than on a section-shaped placeholder. */
+const SECTIONS = [
+  ['#m-below','Vehicle Highlights'],['#m-below','The important stuff'],
+  ['#m-below','Key Features & Specs'],['#m-below','Ride Protection'],
+  ['#m-below','Similar Cars']
+];
+function renderJump(){
+  head('Jump to a section', 'Below-the-fold sections are still in progress.', '');
+  $('#sbody0').innerHTML = `
+    <div class="steps" style="margin-top:0;border-top:0">
+      ${SECTIONS.map(([t,l])=>`<button class="step" data-act="jump-to" data-target="${t}">
+        <span>${l}</span><span class="chev">${ICON.arrow}</span></button>`).join('')}
+    </div>`;
+  $('#sfoot').hidden = true;
+}
+
+/* D2's single sheet: the decision questions and the section list in one place,
+   so the bar needs one control rather than two. */
+function renderGoTo(){
+  head('Go to', 'Pick a question, or jump to a section.', '');
+  $('#sbody0').innerHTML = `
+    <p class="eyebrow">What would help you decide?</p>
+    <div class="steps" style="margin:0 0 18px;border-top:0">
+      ${QUESTIONS.map(q=>{const s=chipSummary(q.id);return `
+        <button class="step" data-act="path" data-p="${q.id}">
+          <span>${q.label}${s?`<span class="meta">${s}</span>`:''}</span><span class="chev">${ICON.arrow}</span></button>`;}).join('')}
+      <button class="step" data-act="path" data-p="fit">
+        <span>Ask Echo<span class="meta">Tell Echo what matters to you</span></span><span class="chev">${ICON.arrow}</span></button>
+    </div>
+    <p class="eyebrow">On this page</p>
+    <div class="steps" style="margin-top:0;border-top:0">
+      ${SECTIONS.map(([t,l])=>`<button class="step" data-act="jump-to" data-target="${t}">
+        <span>${l}</span><span class="chev">${ICON.arrow}</span></button>`).join('')}
+    </div>`;
+  $('#sfoot').hidden = true;
+}
+
+/* --------------------------------------------------------------- G1 · Gallery
+   Structure lifted from echopark-vdp-mobile-prototype_3.html, not reinvented:
+   a fixed top (category tabs, the large frame, the count) and a scrolling
+   thumbnail grid beneath it. Only the grid moves, so the photo you are looking
+   at never leaves the screen while you hunt through 24 of them.
+   Tapping a thumbnail swaps the large frame. Tapping the large frame — or its
+   expand control — opens the full-screen viewer. */
+function renderGallery(){
+  const cat  = GALLERY[S.galleryCat];
+  const lead = S.galleryIndex === 0;
+
+  const tabs = Object.keys(GALLERY).map(k =>
+    `<button class="gtab" data-act="gcat" data-k="${k}" aria-pressed="${S.galleryCat===k}">${GALLERY[k].label}</button>`).join('');
+
+  /* Only the exterior set has real photography. Interior and undercarriage stay
+     as labelled placeholders rather than borrowing exterior shots, which would
+     misrepresent what has been photographed. */
+  const shot = i => `<img src="${heroSrc(i-1)}" alt="">`;
+  const real = GALLERY_PHOTOS && S.galleryCat === 'exterior';
+
+  const large = `<div class="glarge${real && !lead ? ' hasphoto' : ''}" data-act="viewer-open">
+      ${real && !lead ? shot(S.galleryIndex) : `<span>${cat.label} — ${lead ? cat.lead : 'photo ' + S.galleryIndex}</span>`}
+      <button class="gexpand" data-act="viewer-open" aria-label="Open full screen">${ICON.expand}</button>
+    </div>`;
+
+  let thumbs = `<button class="gthumb" data-act="gthumb" data-i="0" aria-pressed="${lead}">${cat.lead === 'photo' ? '1' : '360\u00B0'}</button>`;
+  for (let i = 1; i <= cat.count; i++){
+    thumbs += `<button class="gthumb" data-act="gthumb" data-i="${i}" aria-pressed="${S.galleryIndex===i}">${real ? shot(i) : (i + (cat.lead==='photo'?1:0))}</button>`;
+  }
+
+  head('Gallery', `${cat.lead === 'photo' ? '' : '360\u00B0 view · '}${galleryTotal(S.galleryCat)} photos`, '');
+  $('#sbody0').classList.add('flush');
+  $('#sbody0').innerHTML = `
+    <div class="galtop">
+      <div class="gtabs">${tabs}</div>
+      ${large}
+      <div class="gcount">${lead ? cat.lead : 'Photo ' + S.galleryIndex} · ${S.galleryIndex+1} of ${galleryTotal(S.galleryCat)}</div>
+    </div>
+    <div class="gscroll"><div class="gthumbgrid">${thumbs}</div></div>`;
+  $('#sfoot').hidden = false;
+  $('#sfoot').innerHTML = `<div style="display:flex;gap:10px">
+    <button class="btn ghost" data-act="path" data-p="compare">Car Comparison</button>
+    <button class="btn primary" data-act="testdrive">Test Drive</button></div>`;
+}
+
+/* ------------------------------------------------------- full-screen viewer */
+function viewerTotal(){ return galleryTotal(S.viewerCat); }
+/* Opened from the hero, index 0 is the 360deg lead and 1..23 are the stills, so a
+   hero photo at position n opens at n+1. */
+function openViewer(cat, index, returnTo){
+  S.viewerCat = cat || 'exterior';
+  S.viewerIndex = index || 0;
+  S.viewerReturn = returnTo || null;
+  S.viewerOpen = true;
+  paintViewer();
+  $('#viewer').classList.add('open');
+  $('#framecap').textContent = capFor();
+}
+function closeViewer(){
+  if (!S.viewerOpen) return;
+  S.viewerOpen = false;
+  $('#viewer').classList.remove('open');
+  /* The viewer is a layer over the gallery, not a replacement for it — coming
+     back lands on the photo you were looking at, not back at the top. */
+  if (S.viewerReturn === 'gallery'){ S.galleryIndex = S.viewerIndex; render(); }
+  if (S.viewerReturn === 'hero'){ S.heroIndex = Math.max(0, S.viewerIndex - 1); paintHero(); }
+  $('#framecap').textContent = capFor();
+}
+function paintViewer(){
+  const cat = GALLERY[S.viewerCat], lead = S.viewerIndex === 0;
+  $('#viewerTitle').textContent = cat.label + (lead ? ' — ' + cat.lead : '');
+  $('#viewerStage').innerHTML =
+    `<div class="viewerph">${cat.label} — ${lead ? cat.lead : 'photo ' + S.viewerIndex}</div>`;
+  $('#viewerCount').textContent = (S.viewerIndex+1) + ' / ' + viewerTotal();
+}
+
+/* Key Features and Installed Upgrades — one experience, two segments.
+   Installed Upgrades is no longer a peer control in the hero; it lives here,
+   matching the desktop section header "Key Features and Installed Upgrades". */
+function renderFeatures(){
+  /* Figma 1:18762 — one panel, two groups, no segmented control. Opening it
+     turns the hero markers on; closing turns them off again. */
+  head('Key Features', '', '');
+  $('#sheetTitle').textContent = 'At a glance';
+  $('#sheetSub').textContent = 'Browse the features that shape comfort, convenience, safety, and everyday performance.';
+  const KF = ['Heated front seats','Adaptive cruise control','Blind spot monitor',
+              'Forward collision warning','Android Auto','Leatherette seating'];
+  const UP = ['Granite Crystal Metallic Clearcoat','Black Cloth Low-Back Bucket Seats','Mopar All-Weather Floor Mats'];
+  const row = (f,i) => `<button class="featrow" data-act="feat-open" data-f="${f}" data-i="${i}">
+      <span>${f}</span><span class="chev">${ICON.arrow}</span></button>`;
+  $('#sbody0').innerHTML = `
+    <p class="eyebrow" style="margin-bottom:14px">Key features</p>
+    <h4 class="featgroup">${KF.length} highlighted features</h4>
+    <div class="featlist">${KF.map(row).join('')}</div>
+    <h4 class="featgroup">Installed options on this vehicle</h4>
+    <div class="featlist">${UP.map(row).join('')}</div>
+    <p class="fine">Installed options are factory-fitted equipment, not paid add-ons.</p>`;
+  $('#sfoot').hidden = true;
+}
+
+function renderFeature(){
+  head(S.featureName || 'Blind spot monitor', 'Key feature', '');
+  /* Same affordance and same position as "Back to the price": at the top of the
+     sheet, above the title, not buried under the content. A back link you have to
+     scroll to find is not a back link. */
+  setBack('Back to all features', 'path', {p:'features'});
+  $('#sbody0').innerHTML = `
+    <div style="height:150px;background:var(--media);border-radius:12px;display:grid;place-items:center;color:#8b8b8b;font-size:12px;margin-bottom:14px">Feature photo</div>
+    <p style="font-size:14px;line-height:1.6;margin:0">Alerts you when a vehicle enters the lane beside you, using indicators in both side mirrors.</p>
+    <div class="rowlist" style="margin-top:14px">
+      <div class="r"><span>Included on this vehicle</span><span>Yes</span></div>
+      <div class="r"><span>Category</span><span>Driver assistance</span></div>
+    </div>`;
+  $('#sfoot').hidden = true;
+}
+function renderLocation(){
+  head('This car is at EchoPark Grand Prairie', '20 mi away', '');
+  $('#sbody0').innerHTML = `
+    <div class="panelsoft"><div style="font-size:15px;margin-bottom:4px">It's close by.</div>
+      <div style="font-size:13px;color:var(--muted)">2615 W Interstate 20, Grand Prairie, TX 75052</div></div>
+    <div class="rowlist">
+      <div class="r"><span>Available to see</span><span>Today</span></div>
+      <div class="r"><span>Transfer to another store</span><span>Available · no fee</span></div>
+      <div class="r"><span>Pickup</span><span>Ready in about 2 hours</span></div>
+    </div>`;
+  $('#sfoot').hidden = false;
+  $('#sfoot').innerHTML = `<button class="btn primary block" data-act="testdrive">Schedule a test drive</button>`;
+}
+function renderTestDrive(){
+  const steps = ['Choose where you would like to visit','Choose a time frame','Confirm your visit'];
+  head('Schedule your test drive', steps[S.tdStep], 'Step '+(S.tdStep+1)+' of 3');
+  if (S.tdStep===0){
+    $('#sbody0').innerHTML = `
+      <p class="slede">This car will stay in our inventory and may sell before your test drive, so schedule your visit soon.</p>
+      <div class="composer" style="margin-bottom:14px"><input type="text" placeholder="Search by ZIP code or city" aria-label="Search by ZIP code or city"><button data-act="stub" data-msg="Search locations">Search</button></div>
+      <p class="eyebrow">Nearby locations</p>
+      <div class="rowlist">
+        <div class="r"><span><b style="font-weight:500">EchoPark Grand Prairie</b><br><span style="color:var(--muted);font-size:12px">2615 W Interstate 20, Grand Prairie, TX 75052</span></span><span class="flag">This vehicle is here</span></div>
+        <div class="r"><span><b style="font-weight:500">EchoPark Plano</b><br><span style="color:var(--muted);font-size:12px">3510 E Plano Pkwy, Plano, TX 75074</span></span><span>18 mi</span></div>
+        <div class="r"><span><b style="font-weight:500">EchoPark Southwest</b><br><span style="color:var(--muted);font-size:12px">1101 W Interstate 20, Arlington, TX 76017</span></span><span>24 mi</span></div>
+      </div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-top:14px"><input type="checkbox"> Make this my default location</label>
+      <p class="fine">We'll use this location for future visits and availability.</p>`;
+  } else if (S.tdStep===1){
+    $('#sbody0').innerHTML = `
+      <div class="pills chipsline" style="margin-bottom:14px">
+        ${['Mon 25','Tue 26','Wed 27','Thu 28'].map((d,i)=>`<button class="${i===1?'on':''}" style="${i===1?'background:var(--ink);color:#fff;border-color:var(--ink)':''}" data-act="stub" data-msg="${d}">${d}</button>`).join('')}
+      </div>
+      <p class="eyebrow">Choose a time frame</p>
+      <div class="cargrid" style="grid-template-columns:1fr 1fr">
+        ${['9 AM–10 AM','10 AM–11 AM','12 PM–1 PM','2 PM–3 PM','4 PM–5 PM','5 PM–6 PM'].map((t,i)=>
+          `<button class="hpill ${i===2?'on':''}" style="padding:12px 8px" data-act="stub" data-msg="${t}">${t}</button>`).join('')}
+      </div>
+      <p class="fine">Appointments are confirmed after you continue. We'll collect your contact information on the next step.</p>`;
+  } else {
+    $('#sbody0').innerHTML = `
+      <div class="panelsoft">
+        <div style="font-size:15px;margin-bottom:2px">Tuesday, August 26 · 12 PM–1 PM</div>
+        <div style="font-size:13px;color:var(--muted)">EchoPark Grand Prairie · 2615 W Interstate 20</div>
+      </div>
+      <div class="rowlist">
+        <div class="r"><span>Volkswagen Tiguan SE</span><span>34K mi · ${money(N.totalPrice)}</span></div>
+      </div>
+      <p class="fine">This car will stay in our inventory and may sell before your test drive, so schedule your visit soon.</p>`;
+  }
+  $('#sfoot').hidden = false;
+  $('#sfoot').innerHTML = S.tdStep<2
+    ? `<button class="btn primary block" data-act="td-next">Continue to schedule</button>`
+    : `<button class="btn primary block" data-act="stub" data-msg="Contact details would be collected next">Schedule test drive</button>`;
+}
+
+/* ===========================================================================
+   Actions
+   =========================================================================*/
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-act]');
+  if (!t) return;
+  const a = t.dataset.act;
+
+  switch(a){
+    case 'entry':
+      S.entry = t.dataset.v; S.dismissed=false; toastShown=false; clearTimeout(toastTimer);
+      setState({none:'S0',A:'S1',B:'S2',C:'S4',D:'S8',D2:'S10'}[S.entry]);
+      renderShell(); break;
+
+    case 'paymode':
+      S.payMode = t.dataset.m;
+      $$('#railPay button').forEach(b=>b.classList.toggle('on', b.dataset.m===S.payMode));
+      if (S.path==='pay'){ layers=[]; pop(true); render(); }
+      break;
+
+    case 'layout':
+      S.barLayout = t.dataset.l;
+      $$('#railLayout button').forEach(b=>b.classList.toggle('on', b.dataset.l===S.barLayout));
+      renderShell(); break;
+
+    case 'dismiss':
+      S.dismissed = true; $('#gtoast').classList.remove('show');
+      setState('S5'); renderShell(); break;
+
+    case 'reopen':
+      S.dismissed = false; toastShown=false;
+      setState(S.entry==='C'?'S4':'S1'); renderShell(); break;
+
+    /* One control, one destination. If the drawer is already up this closes it,
+       which is what the flipped chevron is promising. */
+    case 'decide-open':
+      /* Variant A expands its own panel; nothing else has one, so everything
+         else opens the drawer. */
+      if (S.entry==='A'){ S.dismissed = !S.dismissed; renderShell(); break; }
+      if (S.path==='decide'){ closeSheet(); break; }
+      S.dismissed = false;
+      S.path='decide'; openSheet('peek'); render(); renderShell(); break;
+
+    /* The toast is a nudge toward the drawer, never the drawer itself. */
+    case 'toast-open':
+      $('#gtoast').classList.remove('show');
+      S.path='decide'; openSheet('peek'); render(); renderShell(); break;
+
+    case 'pnav-decide':
+      S.path='decide'; openSheet('peek'); render(); break;
+
+    case 'pnav-goto':
+      S.path='goto'; openSheet('half'); render(); break;
+
+    case 'pnav-jump':
+      S.path='jump'; openSheet('peek'); render(); break;
+
+    case 'jump-to': {
+      const el = document.querySelector(t.dataset.target);
+      closeSheet();
+      if (el) $('#scrollarea').scrollTo({top: el.offsetTop - 8, behavior:'smooth'});
+      break;
+    }
+
+    case 'showme-c':
+      S.path='pay'; openSheet('full'); render(); break;
+
+    case 'save':
+      S.saved = !S.saved; setState('S7'); renderShell(); break;
+
+    case 'path':
+      /* Key Features is a toggle once the markers are up: tapping the lit chip
+         puts them away rather than reopening a panel you just closed. */
+      if (t.dataset.p==='features' && S.hotspots && S.path!=='features'){
+        setHotspots(false); renderShell(); break;
+      }
+      S.path = t.dataset.p; S.payDoor = null; layers = [];
+      if (S.path==='features') setHotspots(true);
+      renderShell();
+      if (S.path==='compare') S.cmpScreen = 1;
+      openSheet(SNAP_FOR[S.path] || 'peek'); render(); break;
+
+    case 'gallery':   S.path='gallery';  openSheet('full'); render(); break;
+    case 'hot':       S.path='feature';  openSheet('half'); render(); break;
+    case 'location':  S.path='location'; openSheet('peek'); render(); break;
+    case 'testdrive': S.path='testdrive'; S.tdStep=0; openSheet('full'); render(); break;
+    case 'td-next':   S.tdStep=Math.min(S.tdStep+1,2); render(); break;
+
+    case 'feat-open':
+      S.featureName = t.dataset.f; S.path='feature'; render(); break;
+
+    /* The VDP protection offer and the pay path write to the same state, so a
+       plan added here is already on when the shopper opens "What will I pay?". */
+    case 'vsc-add':
+      S.plans.vsc = !S.plans.vsc;
+      renderShell(); if (S.path==='pay') render();
+      stub(S.plans.vsc ? 'Vehicle service contract added · +$48/mo' : 'Vehicle service contract removed');
+      break;
+
+    /* Straight to the prequalification step, which is the same terms layer the
+       third door opens — one screen, two ways in, exactly as on desktop. */
+    case 'prequal-entry':
+      S.path='pay'; openSheet('full'); render();
+      S.payDoor = 'terms';
+      /* Reached from the price block, "back to what I'll pay" is a screen the
+         shopper was never on. Back goes where they actually came from. */
+      push('the price', PAY_LAYERS.terms.html,
+        `<button class="btn primary block" data-act="stub" data-msg="Hands off to the existing Buying options flow — see handoff §12.2">Continue to the buying process</button>`);
+      break;
+
+    /* The price block asks a narrower question than "what will I pay?", so it
+       opens the answer rather than the menu. Everything else is unchanged — the
+       layer, its footer and "Back to what I'll pay" all behave as they do when
+       the door is reached from inside the path. */
+    case 'breakdown-entry':
+      S.path='pay'; openSheet('full'); render();
+      S.payDoor = 'breakdown';
+      push(PAY_LAYERS.breakdown.title, PAY_LAYERS.breakdown.html,
+        `<button class="btn primary block" data-act="stub" data-msg="Hands off to the existing Buying options flow — see handoff §12.2">Continue to the buying process</button>`);
+      break;
+
+    /* Copy is real here rather than stubbed — a stakeholder tapping a VIN in a
+       wireframe expects something to happen, and the clipboard API is one line. */
+    case 'copy': {
+      const v = t.dataset.v;
+      const done = () => stub('Copied ' + v);
+      if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, done); else done();
+      break;
+    }
+
+    /* ---- hero ---- */
+    case 'hero-tap':  heroTap(); break;
+    case 'hero-step': heroStep(+t.dataset.d); break;
+
+    /* ---- gallery ---- */
+    case 'gcat':   S.galleryCat = t.dataset.k; S.galleryIndex = 0; render(); break;
+    case 'gthumb': S.galleryIndex = +t.dataset.i; render(); break;
+    case 'viewer-open':  openViewer(S.galleryCat, S.galleryIndex, 'gallery'); break;
+    case 'viewer-close': closeViewer(); break;
+    case 'viewer-prev':  if (S.viewerIndex > 0){ S.viewerIndex--; paintViewer(); } break;
+    case 'viewer-next':  if (S.viewerIndex < viewerTotal()-1){ S.viewerIndex++; paintViewer(); } break;
+
+    case 'snap':  snapTo(t.dataset.s); break;
+    case 'cycle': cycleSnap(); break;
+    case 'close': closeSheet(); break;
+    case 'pop':   pop(); break;
+
+    /* ---- Path 1 ---- */
+    case 'plan-toggle':
+      S.plans[t.dataset.k] = !S.plans[t.dataset.k];
+      if (S.pushed) paintPlanLayer();
+      render(); bumpFig(); renderShell(); break;
+    case 'plan-detail': planDetail(t.dataset.k); break;
+    case 'pay-door': {
+      const d = t.dataset.d;
+      if (S.payMode !== 'layers'){ snapTo('full'); break; }
+      S.payDoor = d;
+      const L = PAY_LAYERS[d];
+      /* The prequalification door hands off to another team's flow, so it does
+         not carry the buying-process button. Different destination, different
+         action. */
+      push(L.title, L.html,
+        `<button class="btn primary block" data-act="stub" data-msg="Hands off to the existing Buying options flow — see handoff §12.2">Continue to the buying process</button>`);
+      break;
+    }
+    /* This is where the shopper leaves us. The prequalification view itself is
+       owned by another group and is not ours to design, so the prototype states
+       that and returns a completed result, which is what the VDP would receive. */
+    case 'prequal':
+      stub('Hands off to the prequalification flow — that view is owned by another team. Returning a completed result so the follow-up states can be seen.');
+      S.prequal = true; snapTo('full'); render(); bumpFig(); renderShell(); break;
+    case 'trade':
+      S.tradein = true; snapTo('full'); render(); bumpFig(); renderShell(); break;
+
+    /* ---- Path 2 ---- */
+    case 'fit-pill':    S.fitStage = 2; S.fitOpen = null; render(); break;
+    case 'fit-who':     S.fitStage = 3; S.fitOpen = null; S.fitContext = t.textContent; render(); renderShell(); break;
+    case 'fit-restart': S.fitStage = 0; S.fitOpen = null; render(); renderShell(); break;
+    case 'fit-open':    S.fitOpen = (S.fitOpen === +t.dataset.s) ? null : +t.dataset.s; render(); break;
+    case 'fit-send':    S.fitStage = Math.min(S.fitStage+1,3); render(); renderShell(); break;
+
+    /* ---- Path 3 ---- */
+    case 'cmp-concept': S.cmpConcept = t.dataset.c; S.cmpScreen = 1; render(); syncRail(); break;
+    case 'cmp-screen':  S.cmpScreen  = +t.dataset.n; render(); syncRail(); break;
+
+    /* ---- dev rail ---- */
+    case 'h':
+      $('#frame').className = 'frame ' + (t.dataset.h||'');
+      $$('#railH button').forEach(b=>b.classList.remove('on')); t.classList.add('on'); break;
+    case 'reset': location.href = location.pathname; break;
+
+    case 'stub': stub(t.dataset.msg); break;
+  }
+});
+
+
+let stubTimer=null;
+function stub(msg){
+  if(!msg) return;
+  let el = $('#stubtoast');
+  if(!el){ el=document.createElement('div'); el.id='stubtoast';
+    el.style.cssText='position:absolute;left:16px;right:16px;bottom:86px;z-index:80;background:#242C33;color:#fff;font-size:12.5px;line-height:1.45;padding:11px 13px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+    $('#frame').appendChild(el); }
+  el.textContent = msg;
+  el.style.display='block';
+  clearTimeout(stubTimer); stubTimer=setTimeout(()=>el.style.display='none', 2600);
+}
+
+/* dev rail checkboxes */
+$('#cbPrequal').addEventListener('change',e=>{S.prequal=e.target.checked; render(); renderShell();});
+$('#cbTrade').addEventListener('change',  e=>{S.tradein=e.target.checked; render(); renderShell();});
+$('#cbSaved').addEventListener('change',  e=>{S.saved=e.target.checked; renderShell();});
+
+/* ===========================================================================
+   State index — dev rail jump + ?state= deep links
+   =========================================================================*/
+const STATES = {
+  'S0':()=>{S.entry='none';S.dismissed=false;closeSheet();setState('S0');},
+  'S1':()=>{S.entry='A';S.dismissed=false;closeSheet();setState('S1');},
+  'S2':()=>{S.entry='B';S.dismissed=false;toastShown=true;closeSheet();renderShell();$('#gtoast').classList.add('show');setState('S2');},
+  /* S3 used to be "the toast collapses into the bar". The toast opens the drawer
+     now, so this is the state after that happens. */
+  'S3':()=>{S.entry='B';S.dismissed=false;toastShown=true;S.path='decide';openSheet('peek');render();setState('S3');},
+  'S4':()=>{S.entry='C';S.dismissed=false;closeSheet();setState('S4');},
+  'S5':()=>{S.entry='A';S.dismissed=true;closeSheet();setState('S5');},
+  'S6':()=>{S.entry='A';S.prequal=true;S.fitStage=3;S.cmp=['c1','c3'];closeSheet();setState('S6');},
+  'S7':()=>{S.saved=true;toastShown=true;closeSheet();setState('S7');},
+  'S8':()=>{S.entry='D';S.dismissed=false;closeSheet();renderShell();
+            $('#scrollarea').scrollTop=340;$('#scrollarea').dispatchEvent(new Event('scroll'));setState('S8');},
+  'S10':()=>{S.entry='D2';S.dismissed=false;closeSheet();renderShell();
+             $('#scrollarea').scrollTop=360;$('#scrollarea').dispatchEvent(new Event('scroll'));setState('S10');},
+  'S11':()=>{S.entry='D2';S.dismissed=false;S.path='goto';openSheet('half');render();
+             $('#scrollarea').scrollTop=360;$('#scrollarea').dispatchEvent(new Event('scroll'));setState('S11');},
+  'S9':()=>{S.entry='D';S.dismissed=false;S.path='jump';openSheet('peek');render();
+            $('#scrollarea').scrollTop=340;$('#scrollarea').dispatchEvent(new Event('scroll'));setState('S9');},
+  'P1.0':()=>{S.path='pay';openSheet('full');render();},
+  'P1.1':()=>{S.path='pay';openSheet('full');render();},
+  'P1.2':()=>{S.path='pay';S.plans.vsc=true;S.plans.gap=true;openSheet('full');render();},
+  'P1.3':()=>{S.path='pay';openSheet('full');render();planDetail('vsc');},
+  'P1.4':()=>{S.prequal=false;S.path='pay';openSheet('full');render();},
+  'P1.5':()=>{S.prequal=true;S.path='pay';openSheet('full');render();},
+  'P1.6':()=>{S.prequal=true;S.tradein=true;S.path='pay';openSheet('full');render();},
+  'P1.7':()=>{S.prequal=true;S.tradein=true;S.path='pay';openSheet('full');render();},
+  'P1.8':()=>{S.prequal=true;S.tradein=true;closeSheet();setState('S6');},
+  'P2.0':()=>{S.path='fit';S.fitStage=0;openSheet('full');render();},
+  'P2.1':()=>{S.path='fit';S.fitStage=1;openSheet('full');render();},
+  'P2.2':()=>{S.path='fit';S.fitStage=2;openSheet('full');render();},
+  'P2.3':()=>{S.path='fit';S.fitStage=3;openSheet('full');render();},
+  'P2.4':()=>{S.path='fit';S.fitStage=3;openSheet('full');render();},
+  'P2.5':()=>{S.fitStage=3;closeSheet();setState('S6');},
+  'P3.11':()=>{S.path='compare';S.cmpConcept='1';S.cmpScreen=1;openSheet('full');render();syncRail();},
+  'P3.12':()=>{S.path='compare';S.cmpConcept='1';S.cmpScreen=2;openSheet('full');render();syncRail();},
+  'P3.13':()=>{S.path='compare';S.cmpConcept='1';S.cmpScreen=3;openSheet('full');render();syncRail();},
+  'P3.14':()=>{S.path='compare';S.cmpConcept='1';S.cmpScreen=4;openSheet('full');render();syncRail();},
+  'P3.21':()=>{S.path='compare';S.cmpConcept='2';S.cmpScreen=1;openSheet('full');render();syncRail();},
+  'P3.22':()=>{S.path='compare';S.cmpConcept='2';S.cmpScreen=2;openSheet('full');render();syncRail();},
+  'P3.23':()=>{S.path='compare';S.cmpConcept='2';S.cmpScreen=3;openSheet('full');render();syncRail();},
+  'P3.24':()=>{S.path='compare';S.cmpConcept='2';S.cmpScreen=4;openSheet('full');render();syncRail();},
+  'G1':()=>{S.path='gallery';openSheet('full');render();},
+  'G1b':()=>{S.path='gallery';S.galleryIndex=7;openSheet('full');render();openViewer('exterior',7,'gallery');},
+  'G2':()=>{S.path='features';setHotspots(true);openSheet('full');render();},
+  'G3':()=>{S.featureName='Blind spot monitor';S.path='feature';setHotspots(true);openSheet('half');render();},
+  'G4':()=>{S.path='location';openSheet('peek');render();},
+  'G5':()=>{S.path='testdrive';S.tdStep=0;openSheet('full');render();},
+  'G6':()=>{S.path='testdrive';S.tdStep=1;openSheet('full');render();},
+  'G7':()=>{S.path='testdrive';S.tdStep=2;openSheet('full');render();}
+};
+const GROUPS = [
+  ['Shell and entry',      ['S0','S1','S2','S3','S4','S5','S6','S7','S8','S9','S10','S11']],
+  ['P1 · What will I pay?',['P1.0','P1.1','P1.2','P1.3','P1.4','P1.5','P1.6','P1.7','P1.8']],
+  ['P2 · Does it fit?',    ['P2.0','P2.1','P2.2','P2.3','P2.4','P2.5']],
+  ['P3 · 1 · Ask Echo search',    ['P3.11','P3.12','P3.13','P3.14']],
+  ['P3 · 2 · Ask Echo side panel',['P3.21','P3.22','P3.23','P3.24']],
+  ['Supporting',           ['G1','G2','G3','G4','G5','G6','G7']]
+];
+const LABELS = {
+  S0:'Standard VDP', S1:'Entry A · question bar', S2:'Entry B · hero toast', S3:'Entry B · opened',
+  S4:'Entry C · price callout', S5:'Dismissed', S6:'Return · answered', S7:'Saved',
+  S8:'Entry D · persistent nav', S9:'Persistent nav · jump to a section',
+  S10:'Entry D2 · nav carries price', S11:'D2 · Go to sheet',
+  'P1.0':'Peek · estimated cost','P1.1':'Full ledger','P1.2':'Protection · toggling',
+  'P1.3':'Plan detail','P1.4':'Prequalify · invitation','P1.5':'Terms result',
+  'P1.6':'Trade-in result','P1.7':'Personalised cost','P1.8':'Return to VDP',
+  'P2.0':'Default','P2.1':'Pill picked','P2.2':'Echo asks back','P2.3':'Typed question',
+  'P2.4':'Follow-up','P2.5':'Return',
+  'P3.11':'Ask Echo','P3.12':'Narrowed by payment','P3.13':'Two chosen','P3.14':'Comparison',
+  'P3.21':'Echo opens','P3.22':'Filtered · road trips','P3.23':'Refined · cargo, two chosen','P3.24':'Comparison',
+  G1:'Gallery',G2:'Key feature hotspots',G3:'Feature detail',G4:'Location and availability',
+  G5:'Test drive · location',G6:'Test drive · day and time',G7:'Test drive · confirm'
+};
+(function buildSelect(){
+  const sel = $('#railState');
+  sel.innerHTML = GROUPS.map(([g,ids])=>
+    `<optgroup label="${g}">${ids.map(id=>`<option value="${id}">${id} · ${LABELS[id]}</option>`).join('')}</optgroup>`
+  ).join('');
+  sel.addEventListener('change', ()=>go(sel.value));
+})();
+function go(id){
+  if(!STATES[id]) return;
+  const dialog = $('#dialog');
+  if (dialog) dialog.classList.remove('show');
+  STATES[id](); renderShell(); setState(id);
+  $('#railState').value = id;
+  history.replaceState(null,'','?state='+id);
+}
+
+/* Embedded in the state board: the dev rail is a fixed overlay and would sit on
+   top of a 375px iframe, so it is hidden when we are not the top window. */
+if (window.self !== window.top) document.body.classList.add('embed');
+
+/* The nav appears once the hero is gone — the same rule the base file uses for
+   .minav — and reports which section you are in. */
+(function persistentNav(){
+  const sa = $('#scrollarea'), nav = $('#pnav');
+  sa.addEventListener('scroll', ()=>{
+    const past = sa.scrollTop > ($('#hero').offsetHeight - 40);
+    nav.classList.toggle('show', past);
+    let cur = SECTIONS[0];
+    for (const s of SECTIONS){
+      const el = document.querySelector(s[0]);
+      if (el && el.offsetTop - sa.scrollTop <= 120) cur = s;
+    }
+    $('#pnavSection').textContent = cur[1];
+  }, {passive:true});
+})();
+
+/* Paint the real icons into the shell once at boot. */
+(function paintIcons(){
+  const put=(id,k)=>{const el=$('#'+id); if(el) el.innerHTML=ICON[k]||'';};
+  put('icMenu','menu'); put('icSearch','search'); put('icHeart','heart'); put('icAccount','account');
+  put('icExpand','expand'); put('icDrop','pricedrop');
+  const gp=$('#galleryPill'); if(gp) gp.innerHTML=ICON.grid+'<span>Gallery (24)</span>';
+  $$('.pnav-chev').forEach(e=>e.innerHTML=ICON.chevdown);
+})();
+
+/* boot directly into the requested deterministic capture state. */
+const q = new URLSearchParams(location.search).get('state');
+if (q && STATES[q]) go(q);
+else { renderShell(); setState('S1'); }
+</script>
+</body></html>
